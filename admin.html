@@ -59,7 +59,8 @@
     <!-- Tabs -->
     <nav class="dash-tabs">
       <button class="dash-tab active" data-tab="overview">Overview</button>
-      <button class="dash-tab" data-tab="students">Students <span class="new-badge" id="newBadge" style="display:none;"></span></button>
+      <button class="dash-tab" data-tab="students">Pipeline <span class="new-badge" id="newBadge" style="display:none;"></span></button>
+      <button class="dash-tab" data-tab="roster">Current Students</button>
       <button class="dash-tab" data-tab="attendance">Attendance</button>
       <button class="dash-tab" data-tab="payments">Payments</button>
       <button class="dash-tab" data-tab="cohorts">Cohorts</button>
@@ -96,7 +97,7 @@
     <!-- ===== STUDENTS TAB ===== -->
     <div class="dash-panel" id="panel-students">
       <div class="panel-header">
-        <h3>Student Pipeline</h3>
+        <h3>Enrollment Pipeline</h3>
         <button class="btn btn--primary btn--sm" id="addStudentBtn">+ New Student</button>
       </div>
 
@@ -262,6 +263,69 @@
             </div>
           </form>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== CURRENT STUDENTS TAB ===== -->
+    <div class="dash-panel" id="panel-roster">
+      <div class="panel-header">
+        <h3>Current Students</h3>
+        <div class="panel-header__controls">
+          <select id="rosterFilterTeacher">
+            <option value="">All Teachers</option>
+            <option value="Jennifer Jaramillo">Jennifer Jaramillo</option>
+            <option value="Dale Jaramillo">Dale Jaramillo</option>
+            <option value="Stephanie Brennen">Stephanie Brennen</option>
+          </select>
+          <select id="rosterFilterGroup">
+            <option value="">All Groups</option>
+            <option value="Mon/Wed">Mon / Wed</option>
+            <option value="Tue/Thu">Tue / Thu</option>
+          </select>
+          <select id="rosterFilterTime">
+            <option value="">All Times</option>
+            <option value="2:15-3:15 PM">2:15-3:15 PM</option>
+            <option value="4:00-5:00 PM">4:00-5:00 PM</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Roster summary -->
+      <div class="kpi-row" id="rosterKpis">
+        <div class="kpi">
+          <div class="kpi__value" id="rosterTotal">0</div>
+          <div class="kpi__label">Total Members</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="rosterMonWed">0</div>
+          <div class="kpi__label">Mon / Wed</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="rosterTueThu">0</div>
+          <div class="kpi__label">Tue / Thu</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="rosterTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Grade</th>
+              <th>Teacher</th>
+              <th>Group</th>
+              <th>Time</th>
+              <th>Club</th>
+              <th>RM Level</th>
+              <th>Lesson</th>
+              <th>Parent</th>
+              <th>Phone</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rosterBody"></tbody>
+        </table>
+        <p class="empty-state" id="rosterEmpty">No current students yet. Students appear here once they are placed through the pipeline.</p>
       </div>
     </div>
 

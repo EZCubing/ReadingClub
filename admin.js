@@ -97,6 +97,7 @@
   async function refreshAll() {
     await Promise.all([
       renderStudents(),
+      renderRoster(),
       renderAttendance(),
       renderPayments(),
       renderOverview(),
@@ -354,6 +355,71 @@
     await addActivity(`Deleted student: ${s.name}`);
     await refreshAll();
   };
+
+  // ===== CURRENT STUDENTS (ROSTER) =====
+  const rosterFilterTeacher = document.getElementById('rosterFilterTeacher');
+  const rosterFilterGroup = document.getElementById('rosterFilterGroup');
+  const rosterFilterTime = document.getElementById('rosterFilterTime');
+
+  rosterFilterTeacher.addEventListener('change', () => renderRoster());
+  rosterFilterGroup.addEventListener('change', () => renderRoster());
+  rosterFilterTime.addEventListener('change', () => renderRoster());
+
+  async function renderRoster() {
+    const allStudents = await getStudents();
+    const placed = allStudents.filter(s => s.status === 'Placed');
+
+    // Apply filters
+    const teacherFilter = rosterFilterTeacher.value;
+    const groupFilter = rosterFilterGroup.value;
+    const timeFilter = rosterFilterTime.value;
+
+    let filtered = placed;
+    if (teacherFilter) filtered = filtered.filter(s => s.teacher === teacherFilter);
+    if (groupFilter) filtered = filtered.filter(s => s.student_group === groupFilter);
+    if (timeFilter) filtered = filtered.filter(s => s.time_slot === timeFilter);
+
+    // KPIs
+    document.getElementById('rosterTotal').textContent = placed.length;
+    document.getElementById('rosterMonWed').textContent = placed.filter(s => s.student_group === 'Mon/Wed').length;
+    document.getElementById('rosterTueThu').textContent = placed.filter(s => s.student_group === 'Tue/Thu').length;
+
+    const body = document.getElementById('rosterBody');
+    const empty = document.getElementById('rosterEmpty');
+
+    if (filtered.length === 0) {
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      empty.textContent = placed.length === 0 ? 'No current students yet. Students appear here once they are placed through the pipeline.' : 'No students match the selected filters.';
+      return;
+    }
+    empty.style.display = 'none';
+
+    // Sort by teacher, then group, then name
+    filtered.sort((a, b) => {
+      if (a.teacher !== b.teacher) return (a.teacher || '').localeCompare(b.teacher || '');
+      if (a.student_group !== b.student_group) return (a.student_group || '').localeCompare(b.student_group || '');
+      return a.name.localeCompare(b.name);
+    });
+
+    body.innerHTML = filtered.map(s => `
+      <tr>
+        <td><strong>${esc(s.name)}</strong></td>
+        <td>${esc(s.grade)}</td>
+        <td>${esc(s.teacher)}</td>
+        <td>${esc(s.student_group)}</td>
+        <td>${esc(s.time_slot)}</td>
+        <td>${esc(s.club)}</td>
+        <td>${s.level ? 'RM ' + esc(s.level) : '—'}</td>
+        <td>${s.lesson || '—'}</td>
+        <td>${esc(s.parent)}</td>
+        <td>${esc(s.phone)}</td>
+        <td class="actions">
+          <button onclick="editStudent('${s.id}')">Edit</button>
+        </td>
+      </tr>
+    `).join('');
+  }
 
   // ===== ATTENDANCE =====
   async function renderAttendance() {
