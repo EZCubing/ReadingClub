@@ -3,7 +3,7 @@
   const qrEl = document.getElementById('qrcode');
   if (qrEl && typeof QRCode !== 'undefined') {
     new QRCode(qrEl, {
-      text: window.location.origin + '/register.html',
+      text: 'https://jointhereadingclub.com/register.html',
       width: 200,
       height: 200,
       colorDark: '#0e2f44',
