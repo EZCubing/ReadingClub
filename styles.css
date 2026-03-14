@@ -703,24 +703,18 @@ a:hover { color: var(--clr-sun-warm); }
 }
 
 .levels::before {
-  content: '';
-  position: absolute;
-  left: 28px;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, var(--clr-green-light), var(--clr-green-dark));
-  border-radius: 3px;
+  display: none;
 }
 
 .level {
   position: relative;
-  padding: 32px 32px 32px 72px;
+  padding: 32px;
   background: var(--clr-white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   margin-bottom: 20px;
   transition: transform var(--transition);
+  border-left: 4px solid var(--clr-green-light);
 }
 
 .level:hover {
@@ -728,18 +722,16 @@ a:hover { color: var(--clr-sun-warm); }
 }
 
 .level__badge {
-  position: absolute;
-  left: -2px;
-  top: 32px;
+  display: inline-block;
   background: var(--clr-green-dark);
   color: var(--clr-white);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 6px 14px;
+  padding: 5px 14px;
   border-radius: 50px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  z-index: 1;
+  margin-bottom: 10px;
 }
 
 .level__title {
@@ -1188,18 +1180,8 @@ a:hover { color: var(--clr-sun-warm); }
     grid-template-columns: 1fr;
   }
 
-  .levels::before {
-    left: 20px;
-  }
-
   .level {
-    padding-left: 56px;
-  }
-
-  .level__badge {
-    left: -6px;
-    font-size: 0.65rem;
-    padding: 5px 10px;
+    padding: 24px 20px;
   }
 
   .register-grid {
