@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading Club | Science-Based Reading Instruction</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">
+        <span class="nav__logo-icon">&#9733;</span> Reading Club
+      </a>
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="admin.html" class="nav__admin" title="Admin">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </a>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="#science">Science of Reading</a></li>
+        <li><a href="#pillars">Five Pillars</a></li>
+        <li><a href="#brain">Brain &amp; Reading</a></li>
+        <li><a href="#why-it-works">Why It Works</a></li>
+        <li><a href="#clubs">Clubs</a></li>
+        <li><a href="#levels">Levels</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#register" class="nav__cta">Register Now</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero" id="hero">
+    <div class="hero__scene">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+        <!-- Sky gradient -->
+        <defs>
+          <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#87CEEB"/>
+            <stop offset="60%" stop-color="#b8e4f9"/>
+            <stop offset="100%" stop-color="#daf0fc"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="900" fill="url(#skyGrad)"/>
+
+        <!-- Child-like Sunshine with happy face (top right, lowered) -->
+        <g transform="translate(1220, 380)">
+          <!-- Warm glow -->
+          <circle cx="0" cy="0" r="130" fill="#F4D03F" opacity="0.1"/>
+          <circle cx="0" cy="0" r="105" fill="#F4D03F" opacity="0.15"/>
+
+          <!-- Orange rays (chunky, child-like rounded triangles) -->
+          <g fill="#E67E22" opacity="0.75">
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(0 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(30 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(60 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(90 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(120 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(150 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(180 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(210 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(240 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(270 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(300 0 0)"/>
+            <ellipse cx="0" cy="-100" rx="14" ry="35" transform="rotate(330 0 0)"/>
+          </g>
+
+          <!-- Sun body (big, round, friendly) -->
+          <circle cx="0" cy="0" r="62" fill="#E67E22" opacity="0.3"/>
+          <circle cx="0" cy="0" r="58" fill="#F5B041"/>
+          <circle cx="0" cy="0" r="54" fill="#F4D03F"/>
+          <!-- Highlight on forehead -->
+          <ellipse cx="-8" cy="-16" rx="24" ry="16" fill="#F9E977" opacity="0.5"/>
+
+          <!-- Child-like happy face -->
+          <!-- Big round eyes -->
+          <circle cx="-18" cy="-8" r="8" fill="white"/>
+          <circle cx="18" cy="-8" r="8" fill="white"/>
+          <circle cx="-18" cy="-7" r="5" fill="#3E2723"/>
+          <circle cx="18" cy="-7" r="5" fill="#3E2723"/>
+          <!-- Eye sparkle -->
+          <circle cx="-15" cy="-10" r="2.5" fill="white"/>
+          <circle cx="21" cy="-10" r="2.5" fill="white"/>
+
+          <!-- Big open happy smile -->
+          <path d="M-25 10 Q-15 35 0 38 Q15 35 25 10" stroke="#5D4037" stroke-width="3" fill="#E65100" opacity="0.8" stroke-linecap="round"/>
+          <!-- Tongue peeking out -->
+          <ellipse cx="0" cy="30" rx="10" ry="6" fill="#EF5350" opacity="0.6"/>
+
+          <!-- Rosy round cheeks -->
+          <circle cx="-34" cy="8" r="10" fill="#FF8A65" opacity="0.4"/>
+          <circle cx="34" cy="8" r="10" fill="#FF8A65" opacity="0.4"/>
+        </g>
+
+        <!-- Fluffy Clouds (lowered) -->
+        <g fill="white">
+          <!-- Cloud 1 (big, left) -->
+          <ellipse cx="160" cy="430" rx="100" ry="45" opacity="0.9"/>
+          <ellipse cx="210" cy="405" rx="75" ry="38" opacity="0.95"/>
+          <ellipse cx="120" cy="415" rx="65" ry="32" opacity="0.9"/>
+          <ellipse cx="180" cy="440" rx="85" ry="35" opacity="0.85"/>
+          <ellipse cx="240" cy="425" rx="55" ry="30" opacity="0.9"/>
+          <!-- Cloud 2 (big, center-left) -->
+          <ellipse cx="520" cy="370" rx="95" ry="42" opacity="0.9"/>
+          <ellipse cx="570" cy="348" rx="72" ry="36" opacity="0.95"/>
+          <ellipse cx="470" cy="358" rx="60" ry="30" opacity="0.9"/>
+          <ellipse cx="535" cy="380" rx="80" ry="32" opacity="0.85"/>
+          <ellipse cx="600" cy="365" rx="50" ry="28" opacity="0.9"/>
+          <!-- Cloud 3 (medium, center-right) -->
+          <ellipse cx="880" cy="450" rx="80" ry="36" opacity="0.88"/>
+          <ellipse cx="920" cy="430" rx="60" ry="30" opacity="0.92"/>
+          <ellipse cx="840" cy="438" rx="55" ry="28" opacity="0.88"/>
+          <ellipse cx="890" cy="460" rx="70" ry="28" opacity="0.82"/>
+          <!-- Cloud 4 (small, lower left) -->
+          <ellipse cx="340" cy="510" rx="65" ry="28" opacity="0.85"/>
+          <ellipse cx="370" cy="495" rx="50" ry="24" opacity="0.9"/>
+          <ellipse cx="315" cy="502" rx="45" ry="22" opacity="0.85"/>
+          <ellipse cx="350" cy="518" rx="55" ry="22" opacity="0.8"/>
+          <!-- Cloud 5 (small, right of sun) -->
+          <ellipse cx="1050" cy="490" rx="60" ry="26" opacity="0.85"/>
+          <ellipse cx="1080" cy="476" rx="45" ry="22" opacity="0.9"/>
+          <ellipse cx="1025" cy="482" rx="42" ry="20" opacity="0.85"/>
+          <!-- Cloud 6 (wispy, upper area) -->
+          <ellipse cx="720" cy="330" rx="55" ry="22" opacity="0.75"/>
+          <ellipse cx="745" cy="320" rx="40" ry="18" opacity="0.8"/>
+          <ellipse cx="698" cy="325" rx="38" ry="17" opacity="0.75"/>
+        </g>
+
+        <!-- Rolling hills (back layer - lighter green) -->
+        <path d="M0 700 Q180 580 360 640 Q540 700 720 620 Q900 540 1080 620 Q1260 700 1440 600 L1440 900 L0 900 Z" fill="#A5D6A7" opacity="0.6"/>
+
+        <!-- Rolling hills (middle layer) -->
+        <path d="M0 740 Q200 650 400 700 Q600 750 800 680 Q1000 610 1200 700 Q1350 750 1440 680 L1440 900 L0 900 Z" fill="#81C784" opacity="0.7"/>
+
+        <!-- Full-grown tree (right side, on back hill) -->
+        <g transform="translate(1050, 580)">
+          <!-- Trunk -->
+          <rect x="-10" y="-10" width="20" height="80" rx="4" fill="#795548"/>
+          <rect x="-7" y="0" width="14" height="70" rx="3" fill="#8D6E63"/>
+          <!-- Branch left -->
+          <rect x="-40" y="-5" width="35" height="8" rx="4" fill="#795548" transform="rotate(-30 -5 0)"/>
+          <!-- Branch right -->
+          <rect x="5" y="-5" width="35" height="8" rx="4" fill="#795548" transform="rotate(25 5 0)"/>
+          <!-- Canopy -->
+          <ellipse cx="0" cy="-40" rx="55" ry="45" fill="#4CAF50"/>
+          <ellipse cx="-25" cy="-25" rx="35" ry="30" fill="#66BB6A"/>
+          <ellipse cx="25" cy="-25" rx="35" ry="30" fill="#43A047"/>
+          <ellipse cx="0" cy="-55" rx="30" ry="25" fill="#66BB6A"/>
+        </g>
+
+        <!-- Rolling hills (front layer - darkest green) -->
+        <path d="M0 800 Q160 720 320 760 Q480 800 640 740 Q800 680 960 760 Q1120 830 1280 760 Q1380 720 1440 750 L1440 900 L0 900 Z" fill="#66BB6A"/>
+
+        <!-- Baby tree / sapling (left side, on front hill) -->
+        <g transform="translate(280, 730)">
+          <!-- Small trunk -->
+          <rect x="-4" y="-5" width="8" height="35" rx="3" fill="#795548"/>
+          <rect x="-3" y="0" width="6" height="30" rx="2" fill="#8D6E63"/>
+          <!-- Small leaves -->
+          <ellipse cx="0" cy="-18" rx="16" ry="15" fill="#81C784"/>
+          <ellipse cx="-8" cy="-12" rx="10" ry="10" fill="#A5D6A7"/>
+          <ellipse cx="8" cy="-12" rx="10" ry="10" fill="#66BB6A"/>
+          <ellipse cx="0" cy="-25" rx="9" ry="8" fill="#A5D6A7"/>
+        </g>
+
+        <!-- Medium growing tree (center, on front hill) -->
+        <g transform="translate(650, 710)">
+          <!-- Trunk -->
+          <rect x="-7" y="-8" width="14" height="55" rx="4" fill="#795548"/>
+          <rect x="-5" y="0" width="10" height="45" rx="3" fill="#8D6E63"/>
+          <!-- Small branch -->
+          <rect x="-25" y="0" width="22" height="6" rx="3" fill="#795548" transform="rotate(-25 -3 3)"/>
+          <!-- Canopy -->
+          <ellipse cx="0" cy="-30" rx="35" ry="30" fill="#4CAF50"/>
+          <ellipse cx="-15" cy="-20" rx="22" ry="20" fill="#66BB6A"/>
+          <ellipse cx="15" cy="-20" rx="22" ry="20" fill="#43A047"/>
+          <ellipse cx="0" cy="-42" rx="20" ry="16" fill="#66BB6A"/>
+        </g>
+
+        <!-- Front grass texture -->
+        <path d="M0 850 Q360 830 720 850 Q1080 870 1440 840 L1440 900 L0 900 Z" fill="#4CAF50" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="hero__content">
+      <h1 class="hero__brand">Reading Club</h1>
+      <p class="hero__tag">Evidence-Based &bull; Expert-Led &bull; Proven Results</p>
+      <p class="hero__headline">Every Child Deserves<br />to Read with <span class="highlight">Confidence</span></p>
+      <p class="hero__sub">Small-group reading instruction grounded in the Science of Reading &mdash; building strong, lifelong readers one phoneme at a time.</p>
+    </div>
+    <div class="hero__actions">
+      <a href="#science" class="btn btn--outline btn--lg">Learn More</a>
+      <a href="#register" class="btn btn--primary btn--lg">Register Now</a>
+    </div>
+  </header>
+
+  <!-- ===== SCIENCE OF READING ===== -->
+  <section class="section" id="science">
+    <div class="container">
+      <div class="section__label">The Foundation</div>
+      <h2 class="section__title">What Is the Science of Reading?</h2>
+      <div class="two-col">
+        <div class="two-col__text">
+          <p>The <strong>Science of Reading</strong> is not a program, curriculum, or philosophy. It is a vast body of research &mdash; spanning over five decades and drawing from cognitive science, neuroscience, linguistics, and education &mdash; that tells us <em>how</em> the human brain learns to read.</p>
+          <p>This research converges on a clear conclusion: reading is not natural. Unlike spoken language, which humans acquire instinctively, reading must be <strong>explicitly taught</strong>. The brain must be trained to connect letters (graphemes) with sounds (phonemes) and build the neural pathways that turn written symbols into meaning.</p>
+          <p>When instruction is aligned with this science, <strong>95% of children</strong> can learn to read proficiently. When it is not, struggling readers are often left behind &mdash; not because of ability, but because of method.</p>
+        </div>
+        <div class="two-col__aside">
+          <div class="callout">
+            <div class="callout__icon">&#128218;</div>
+            <h3>Key Insight</h3>
+            <p>Reading is a <strong>learned skill</strong>, not a natural process. The brain must build new neural circuits to decode written language &mdash; and it needs systematic, explicit instruction to do so efficiently.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FIVE PILLARS ===== -->
+  <section class="section section--cream" id="pillars">
+    <div class="container">
+      <div class="section__label">The Framework</div>
+      <h2 class="section__title">The Five Pillars of Reading</h2>
+      <p class="section__sub">Identified by the National Reading Panel, these five components form the foundation of effective reading instruction.</p>
+      <div class="pillars">
+        <div class="pillar">
+          <div class="pillar__number">1</div>
+          <h3 class="pillar__title">Phonemic Awareness</h3>
+          <p>The ability to hear, identify, and manipulate individual sounds (phonemes) in spoken words. This is the foundational skill that allows children to understand that words are made up of discrete sounds.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar__number">2</div>
+          <h3 class="pillar__title">Phonics</h3>
+          <p>Understanding the systematic relationship between letters and sounds. Explicit, systematic phonics instruction teaches children to decode words by mapping graphemes to phonemes &mdash; the alphabetic principle.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar__number">3</div>
+          <h3 class="pillar__title">Fluency</h3>
+          <p>The ability to read text accurately, quickly, and with proper expression. Fluent readers can focus their mental energy on comprehension rather than decoding, making reading feel effortless.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar__number">4</div>
+          <h3 class="pillar__title">Vocabulary</h3>
+          <p>Knowledge of words and their meanings. A rich vocabulary is essential for comprehension. Children need both direct vocabulary instruction and wide exposure to language in context.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar__number">5</div>
+          <h3 class="pillar__title">Comprehension</h3>
+          <p>The ultimate goal of reading &mdash; constructing meaning from text. Comprehension strategies include summarizing, questioning, visualizing, and making connections to prior knowledge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GOOD READING INSTRUCTION ===== -->
+  <section class="section" id="instruction">
+    <div class="container">
+      <div class="section__label">Best Practices</div>
+      <h2 class="section__title">What Does Good Reading Instruction Look Like?</h2>
+      <div class="features">
+        <div class="feature">
+          <div class="feature__icon">&#9998;</div>
+          <h3>Explicit &amp; Direct</h3>
+          <p>Skills are taught directly and clearly &mdash; nothing is left to guessing. Teachers model exactly what students need to do, then guide them through practice step by step.</p>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">&#128736;</div>
+          <h3>Systematic &amp; Sequential</h3>
+          <p>Concepts are introduced in a logical order, from simple to complex. Each new skill builds on previously mastered ones, creating a strong, cumulative foundation.</p>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">&#128200;</div>
+          <h3>Data-Driven</h3>
+          <p>Ongoing assessment ensures instruction targets each child's specific needs. Progress is monitored so adjustments can be made quickly and effectively.</p>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">&#128101;</div>
+          <h3>Small-Group &amp; Differentiated</h3>
+          <p>Children learn best when instruction is tailored to their level. Small groups allow for personalized attention, targeted practice, and immediate corrective feedback.</p>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">&#128257;</div>
+          <h3>Multi-Sensory</h3>
+          <p>Effective instruction engages visual, auditory, and kinesthetic pathways simultaneously, strengthening neural connections and making learning stick.</p>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">&#9201;</div>
+          <h3>Consistent Practice</h3>
+          <p>Repetition and cumulative review are non-negotiable. Frequent practice with immediate feedback solidifies skills and builds automaticity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE BRAIN & READING ===== -->
+  <section class="section section--dark" id="brain">
+    <div class="container">
+      <div class="section__label section__label--light">Neuroscience</div>
+      <h2 class="section__title section__title--light">What Happens in the Brain When We Read?</h2>
+      <div class="brain-grid">
+        <div class="brain-card">
+          <h3>&#129504; No "Reading Center"</h3>
+          <p>Unlike speech, there is no area of the brain pre-wired for reading. The brain must <strong>repurpose</strong> existing circuits &mdash; regions originally evolved for visual processing and language &mdash; and weave them together into a new "reading network."</p>
+        </div>
+        <div class="brain-card">
+          <h3>&#128065; Visual Processing</h3>
+          <p>The <strong>occipital lobe</strong> first processes the visual pattern of letters. A specialized region called the <em>Visual Word Form Area</em> learns to instantly recognize letter combinations, enabling rapid word identification.</p>
+        </div>
+        <div class="brain-card">
+          <h3>&#128264; Phonological Decoding</h3>
+          <p>Regions in the <strong>left temporal and parietal lobes</strong> convert letters into their corresponding sounds. This phonological processing is the engine of decoding and is why systematic phonics instruction is so critical.</p>
+        </div>
+        <div class="brain-card">
+          <h3>&#128161; Meaning &amp; Comprehension</h3>
+          <p>The <strong>frontal and temporal lobes</strong> activate to retrieve word meanings, integrate syntax, and build understanding. Skilled readers do this almost instantaneously &mdash; a process that took years of practice to develop.</p>
+        </div>
+        <div class="brain-card">
+          <h3>&#9889; Building Neural Pathways</h3>
+          <p>With repeated practice, the brain strengthens these connections through <strong>myelination</strong> &mdash; coating neural pathways in a fatty sheath that speeds signal transmission. This is why practice and repetition matter so much.</p>
+        </div>
+        <div class="brain-card">
+          <h3>&#128338; From Effortful to Automatic</h3>
+          <p>Beginning readers rely heavily on slow, effortful decoding. Over time, the brain shifts from a <strong>phonological route</strong> (sounding out) to an <strong>orthographic route</strong> (instant recognition), freeing mental resources for comprehension.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== EDUCATION LANDSCAPE ===== -->
+  <section class="section" id="landscape">
+    <div class="container">
+      <div class="section__label">The Movement</div>
+      <h2 class="section__title">A Historic Shift in Education</h2>
+      <div class="two-col">
+        <div class="two-col__text">
+          <p>Across the nation, a seismic shift is underway in how reading is taught. After decades of debate, <strong>state legislatures are passing laws requiring schools to adopt evidence-based reading instruction</strong> aligned with the Science of Reading.</p>
+          <p>This movement is driven by sobering data: roughly <strong>two-thirds of American fourth graders</strong> read below proficiency. For too long, many classrooms relied on methods &mdash; like three-cueing and balanced literacy &mdash; that lacked scientific support. Children were told to guess at words using pictures or context clues instead of being taught to decode them.</p>
+          <p>Now, states are mandating that schools use <strong>structured literacy approaches</strong>: explicit phonics, phonemic awareness, and decodable texts. Teachers are being retrained, curricula are being replaced, and accountability measures are being strengthened.</p>
+          <p>This is the biggest topic in education right now &mdash; and it matters because <strong>every child's future depends on the ability to read.</strong></p>
+        </div>
+        <div class="two-col__aside">
+          <div class="stat-stack">
+            <div class="stat">
+              <div class="stat__number">40+</div>
+              <div class="stat__label">States have passed or introduced Science of Reading legislation</div>
+            </div>
+            <div class="stat">
+              <div class="stat__number">65%</div>
+              <div class="stat__label">of U.S. 4th graders read below proficiency (NAEP 2022)</div>
+            </div>
+            <div class="stat">
+              <div class="stat__number">95%</div>
+              <div class="stat__label">of children can learn to read with proper instruction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== WHY READING CLUB WORKS ===== -->
+  <section class="section section--cream" id="why-it-works">
+    <div class="container">
+      <div class="section__label">Our Approach</div>
+      <h2 class="section__title">Why Reading Club Works</h2>
+      <p class="section__sub">Reading Club delivers instruction that is fully aligned with the Science of Reading &mdash; because when you teach the right way, every child can succeed.</p>
+      <div class="works-grid">
+        <div class="works-card">
+          <div class="works-card__icon">&#127919;</div>
+          <h3>Direct &amp; Explicit Instruction</h3>
+          <p>Every lesson is clear, intentional, and structured. Students are never left to figure it out on their own &mdash; skills are modeled, practiced, and reinforced systematically.</p>
+        </div>
+        <div class="works-card">
+          <div class="works-card__icon">&#128220;</div>
+          <h3>Systematic Phonics</h3>
+          <p>Our phonics instruction follows a carefully sequenced scope and sequence, ensuring students master each sound-spelling pattern before moving to the next.</p>
+        </div>
+        <div class="works-card">
+          <div class="works-card__icon">&#128170;</div>
+          <h3>Lots of Practice</h3>
+          <p>Repetition builds fluency and automaticity. Students get abundant opportunities to apply new skills through reading, writing, and word work activities.</p>
+        </div>
+        <div class="works-card">
+          <div class="works-card__icon">&#9889;</div>
+          <h3>Immediate Feedback</h3>
+          <p>Errors are corrected in real time so students don't practice mistakes. Positive, specific feedback builds confidence and accelerates progress.</p>
+        </div>
+        <div class="works-card">
+          <div class="works-card__icon">&#128101;</div>
+          <h3>Small-Group Instruction</h3>
+          <p>With small groups, every child gets the attention they deserve. Instruction is differentiated to meet each student exactly where they are.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CLUBS ===== -->
+  <section class="section section--cream" id="clubs">
+    <div class="container">
+      <div class="section__label">Our Programs</div>
+      <h2 class="section__title">Clubs</h2>
+      <p class="section__sub">In addition to Reading Club, we offer focused programs to help your child build confidence and skills across subjects.</p>
+
+      <div class="clubs-tabs">
+        <button class="clubs-tab active" data-tab="math">Math Club</button>
+        <button class="clubs-tab" data-tab="testprep">Test Prep Club</button>
+      </div>
+
+      <div class="clubs-panels">
+        <!-- Math Club -->
+        <div class="clubs-panel active" id="panel-math">
+          <div class="club-content">
+            <div class="club-content__icon">&#128290;</div>
+            <h3>Math Club</h3>
+            <p>Build a strong math foundation through hands-on, engaging instruction that makes math fun and accessible for every learner.</p>
+            <ul>
+              <li>Number sense, operations, and problem-solving skills</li>
+              <li>Fun, structured sessions that make math enjoyable</li>
+              <li>Hands-on activities and real-world connections</li>
+              <li>Small groups for personalized support</li>
+              <li>Confidence-building through mastery and practice</li>
+              <li>Led by experienced educators</li>
+            </ul>
+            <a href="#register" class="btn btn--primary">Register for Math Club</a>
+          </div>
+        </div>
+
+        <!-- Test Prep Club -->
+        <div class="clubs-panel" id="panel-testprep">
+          <div class="club-content">
+            <div class="club-content__icon">&#128221;</div>
+            <h3>Test Prep Club</h3>
+            <p>Prepare your child for standardized tests with targeted practice, proven strategies, and the confidence to perform their best on test day.</p>
+            <ul>
+              <li>Familiarity with test formats and question types</li>
+              <li>Reading comprehension and math test strategies</li>
+              <li>Timed practice sessions to build stamina and pacing</li>
+              <li>Small groups for personalized coaching</li>
+              <li>Reduce test anxiety through preparation and practice</li>
+              <li>Led by experienced educators</li>
+            </ul>
+            <a href="#register" class="btn btn--primary">Register for Test Prep Club</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== READING LEVELS ===== -->
+  <section class="section" id="levels">
+    <div class="container">
+      <div class="section__label">Progression</div>
+      <h2 class="section__title">Reading Instruction Levels</h2>
+      <p class="section__sub">Our five-level framework guides students from foundational awareness to confident, independent reading.</p>
+      <div class="levels">
+        <div class="level">
+          <div class="level__badge">Level 1</div>
+          <h3 class="level__title">Pre-Reader</h3>
+          <h4 class="level__subtitle">Phonemic Awareness &amp; Letter Knowledge</h4>
+          <p>Students develop awareness of sounds in spoken language and learn to identify and form letters. Activities focus on rhyming, segmenting, blending sounds, and letter-sound correspondence. This stage builds the critical foundation for all future reading.</p>
+        </div>
+        <div class="level">
+          <div class="level__badge">Level 2</div>
+          <h3 class="level__title">Emerging Reader</h3>
+          <h4 class="level__subtitle">Basic Decoding &amp; CVC Words</h4>
+          <p>Students begin blending sounds together to read simple consonant-vowel-consonant (CVC) words like "cat," "sit," and "hop." They practice reading decodable texts and begin building sight word recognition for high-frequency words.</p>
+        </div>
+        <div class="level">
+          <div class="level__badge">Level 3</div>
+          <h3 class="level__title">Developing Reader</h3>
+          <h4 class="level__subtitle">Advanced Phonics &amp; Fluency Building</h4>
+          <p>Students tackle consonant blends, digraphs, long vowel patterns, and multi-syllable words. Fluency practice increases as students read longer, more complex decodable texts with growing accuracy and expression.</p>
+        </div>
+        <div class="level">
+          <div class="level__badge">Level 4</div>
+          <h3 class="level__title">Transitional Reader</h3>
+          <h4 class="level__subtitle">Comprehension &amp; Vocabulary Expansion</h4>
+          <p>With strong decoding skills in place, focus shifts to comprehension strategies: summarizing, predicting, questioning, and making inferences. Vocabulary instruction deepens, and students read a wider variety of text types.</p>
+        </div>
+        <div class="level">
+          <div class="level__badge">Level 5</div>
+          <h3 class="level__title">Independent Reader</h3>
+          <h4 class="level__subtitle">Fluent Reading &amp; Critical Thinking</h4>
+          <p>Students read grade-level text fluently and with strong comprehension. They analyze texts, compare perspectives, and read across genres. The goal is a confident, self-motivated reader who reads for both learning and pleasure.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TESTIMONIALS ===== -->
+  <section class="section section--green" id="testimonials">
+    <div class="container">
+      <div class="section__label">Success Stories</div>
+      <h2 class="section__title">What Families Are Saying</h2>
+      <div class="testimonials">
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">"I can't say enough about the reading club, I recommend it to everyone. My daughter started kindergarten during Covid and on top of that is very dyslexic so the poor thing had a rough start. As I also struggle with it was really hard for me to try and help her. I had tried every app, dvd and gimmick I could find and I really just wasn't sure what else to do. Mrs Jaramillo immediately knew how to reach her and in the few short years she has been in her group Lily has jumped multiple grade levels in reading and her whole attitude towards school has changed. Watching your child finally click and understanding is worth everything. We can't thank her enough."</p>
+          <div class="testimonial__author">&mdash; Danielle and Michael Taylor</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">"I'm totally amazed at how quick you get them to understand, Evan is loving it and that's what makes the difference. You're teaching them how to LOVE learning!"</p>
+          <div class="testimonial__author">&mdash; Karen Jurgeson</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">"Mrs. Jaramillo's reading and writing club has helped our son not only keep up the skills he learned in kindergarten but also expand his knowledge base. Mrs. Jaramillo engages with the kids and helps keep them focused while having fun. I am so blessed to have the opportunity to further our son's learning. Thank you so much Mrs. Jaramillo!"</p>
+          <div class="testimonial__author">&mdash; Briann Peralta</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">"I highly recommend the reading and writing club as it is phenomenal! It has helped my son continue building on lessons learned during the school year resulting in astonishing growth in his penmanship and reading skills. The extra support from the club increased his confidence and interest in reading and writing, his least favorite school subjects. Thanks to Mrs. Jaramillo, he loves reading and writing now."</p>
+          <div class="testimonial__author">&mdash; Jasmine Desiderio</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">"My twins attended kindergarten virtually due to COVID and although their teacher did great considering the situation my husband and I felt like our twins needed extra support to prepare them for First Grade. Mrs. Jaramillo's program has given them that! Her program is fun and keeps them engaged. We have noticed that their confidence has grown and they enjoy the program that she teaches. The program is easy to use and they are able to do their work and login on their own without an adult standing nearby."</p>
+          <div class="testimonial__author">&mdash; Cathy Matthews</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== REGISTRATION ===== -->
+  <section class="section section--register" id="register">
+    <div class="container">
+      <div class="register-banner">
+        <div class="register-banner__badge">Enrollment Is Now Open</div>
+        <h2 class="register-banner__title">Summer 2026 Sessions</h2>
+        <p class="register-banner__lead">Help your child stay confident and prepared for the next school year with engaging, small-group instruction designed to <strong>prevent summer learning loss</strong>.</p>
+
+        <div class="register-grid">
+          <div class="register-card">
+            <h3>&#128214; Reading Club</h3>
+            <ul>
+              <li>Evidence-based reading instruction aligned with the Science of Reading</li>
+              <li>Systematic phonics and phonemic awareness</li>
+              <li>Fun, structured sessions that keep kids engaged</li>
+              <li>Small groups for personalized support</li>
+              <li>Led by experienced educators</li>
+              <li>Immediate feedback to build confidence</li>
+            </ul>
+          </div>
+          <div class="register-card">
+            <h3>&#128290; Math Club</h3>
+            <ul>
+              <li>Building strong math skill foundations</li>
+              <li>Fun, structured sessions that make math enjoyable</li>
+              <li>Small groups for personalized support</li>
+              <li>Led by experienced educators</li>
+              <li>Hands-on activities and problem solving</li>
+              <li>Confidence-building through mastery</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="register-banner__urgency">
+          <strong>Spots are limited and expected to fill quickly.</strong> Secure your child's place today.
+        </div>
+
+        <!-- QR Code & Registration Link -->
+        <div class="register-qr">
+          <p class="register-qr__instruction">Scan the QR code or click the button below to fill out the registration &amp; interest form.</p>
+          <div class="register-qr__code">
+            <a href="register.html" target="_blank" rel="noopener">
+              <div id="qrcode"></div>
+            </a>
+          </div>
+          <div class="register-banner__actions">
+            <a href="register.html" target="_blank" rel="noopener" class="btn btn--primary btn--lg">Register &amp; Interest Form</a>
+          </div>
+        </div>
+
+        <!-- Assessment Process -->
+        <div class="register-assessment">
+          <h3>What Happens After You Register?</h3>
+          <div class="assessment-steps">
+            <div class="assessment-step">
+              <div class="assessment-step__number">1</div>
+              <div class="assessment-step__text">
+                <h4>Brief Assessment</h4>
+                <p>To ensure students are placed in the most effective small group, I conduct a brief assessment prior to the start of sessions. This allows me to better understand your child's current skills and learning needs.</p>
+              </div>
+            </div>
+            <div class="assessment-step">
+              <div class="assessment-step__number">2</div>
+              <div class="assessment-step__text">
+                <h4>Session Placement</h4>
+                <p>After the assessment, students will receive their session placement based on their individual skill level, ensuring they are grouped for maximum growth.</p>
+              </div>
+            </div>
+            <div class="assessment-step">
+              <div class="assessment-step__number">3</div>
+              <div class="assessment-step__text">
+                <h4>Schedule &amp; Tuition Details</h4>
+                <p>You will receive schedule options and tuition details so you can choose the sessions that work best for your family.</p>
+              </div>
+            </div>
+          </div>
+          <p class="register-assessment__thanks">Thank you again for your interest &mdash; I look forward to working with your child!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOUNDER ===== -->
+  <section class="section" id="founder">
+    <div class="container">
+      <div class="section__label">Leadership</div>
+      <h2 class="section__title">Meet the Founder</h2>
+      <div class="founder">
+        <img class="founder__avatar" src="founder.jpg" alt="Jennifer Jaramillo" />
+        <div class="founder__info">
+          <h3 class="founder__name">Jennifer Jaramillo</h3>
+          <p class="founder__credentials">Master in Education &bull; Level 3 Teacher</p>
+          <p class="founder__bio">With <strong>over 20 years</strong> of classroom experience, Jennifer Jaramillo has dedicated her career to delivering proven results in reading instruction. As a Level 3 teacher &mdash; the highest performance designation &mdash; she brings deep expertise in structured literacy, phonics-based instruction, and differentiated learning to every Reading Club session.</p>
+          <p class="founder__bio">Jennifer founded Reading Club with a simple mission: every child can learn to read when given the right instruction. Her approach combines the rigor of the Science of Reading with the warmth and encouragement that helps children thrive.</p>
+          <div class="founder__contact">
+            <a href="mailto:dj.jaramillo99@gmail.com">dj.jaramillo99@gmail.com</a>
+            <a href="tel:5053068309">(505) 306-8309</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <span class="nav__logo-icon">&#9733;</span> Reading Club
+        </div>
+        <div class="footer__contact">
+          <a href="mailto:dj.jaramillo99@gmail.com">dj.jaramillo99@gmail.com</a>
+          <a href="tel:5053068309">(505) 306-8309</a>
+        </div>
+        <p class="footer__copy">&copy; 2026 Reading Club. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

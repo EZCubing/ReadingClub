@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summer Reading & Math Club 2026 Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green: #4CAF50; --green-dark: #2E7D32; --green-light: #81C784;
+      --green-pale: #E8F5E9; --cream: #FFF8E7; --white: #fff;
+      --text: #3E4A3D; --text-light: #6B7B6E; --border: #d4e4d6;
+      --sun: #F4D03F; --red: #e53935; --radius: 14px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --font-h: 'Merriweather', Georgia, serif;
+    }
+    body { font-family: var(--font); color: var(--text); background: linear-gradient(180deg, #daf0fc 0%, var(--green-pale) 50%, var(--cream) 100%); min-height: 100vh; }
+
+    .reg-page { max-width: 640px; margin: 0 auto; padding: 40px 20px 60px; }
+    .reg-header { text-align: center; margin-bottom: 36px; }
+    .reg-header__logo { font-family: var(--font-h); font-size: 2rem; font-weight: 900; color: var(--green-dark); margin-bottom: 8px; }
+    .reg-header__logo span { color: var(--sun); }
+    .reg-header__subtitle { font-family: var(--font-h); font-size: 1.1rem; color: var(--text); margin-bottom: 6px; }
+    .reg-header p { color: var(--text-light); font-size: 1rem; line-height: 1.7; }
+    .reg-header__open { display: inline-block; background: var(--green); color: var(--white); font-weight: 700; font-size: 0.85rem; padding: 6px 20px; border-radius: 50px; margin-top: 12px; }
+
+    .reg-card { background: var(--white); border-radius: var(--radius); box-shadow: 0 8px 40px rgba(0,0,0,0.08); padding: 40px 36px; }
+
+    .field { margin-bottom: 24px; }
+    .field label, .field > .field-label { font-size: 0.92rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 8px; }
+    .field .required { color: var(--red); margin-left: 2px; }
+    .field input[type="text"],
+    .field input[type="email"],
+    .field input[type="tel"],
+    .field select {
+      width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px;
+      font-family: var(--font); font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+      background: var(--white);
+    }
+    .field input:focus, .field select:focus { border-color: var(--green); }
+
+    /* Radio buttons */
+    .radio-group, .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+    .radio-item, .checkbox-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: all 0.15s; font-size: 0.92rem;
+    }
+    .radio-item:hover, .checkbox-item:hover { border-color: var(--green-light); background: var(--green-pale); }
+    .radio-item.selected, .checkbox-item.selected { border-color: var(--green); background: var(--green-pale); }
+
+    .radio-item input[type="radio"], .checkbox-item input[type="checkbox"] {
+      width: 18px; height: 18px; accent-color: var(--green); cursor: pointer;
+    }
+
+    /* Agreement checkbox */
+    .agree-field { margin-top: 28px; margin-bottom: 28px; padding: 16px; background: #FFF8E7; border-radius: 8px; border: 2px solid var(--sun); }
+    .agree-field label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.9rem; line-height: 1.5; }
+    .agree-field input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--green); margin-top: 2px; flex-shrink: 0; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font); font-weight: 600; font-size: 1rem; padding: 14px 32px; border-radius: 50px; border: none; cursor: pointer; transition: all 0.2s; text-decoration: none; width: 100%; }
+    .btn--primary { background: var(--green); color: var(--white); }
+    .btn--primary:hover { background: var(--green-dark); }
+    .btn--primary:disabled { background: var(--border); cursor: not-allowed; }
+
+    .success { display: none; text-align: center; padding: 40px 20px; }
+    .success__icon { font-size: 4rem; margin-bottom: 16px; }
+    .success h2 { font-family: var(--font-h); font-size: 1.5rem; color: var(--green-dark); margin-bottom: 12px; }
+    .success p { color: var(--text-light); font-size: 1rem; line-height: 1.7; margin-bottom: 24px; }
+    .success a { color: var(--green-dark); font-weight: 600; text-decoration: none; }
+    .success a:hover { text-decoration: underline; }
+
+    .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 12px; display: none; }
+
+    .back-link { display: block; text-align: center; margin-top: 24px; color: var(--text-light); font-size: 0.9rem; text-decoration: none; }
+    .back-link:hover { color: var(--green-dark); }
+
+    .divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+    @media (max-width: 500px) {
+      .reg-card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="reg-page">
+    <div class="reg-header">
+      <div class="reg-header__logo"><span>&#9733;</span> Reading Club</div>
+      <div class="reg-header__subtitle">Summer Reading &amp; Math Club 2026 Registration</div>
+      <span class="reg-header__open">Registration is OPEN!</span>
+    </div>
+
+    <div class="reg-card">
+      <!-- Form -->
+      <div id="formSection">
+
+        <form id="regForm" novalidate>
+
+          <!-- 1. Parent/Guardian Name -->
+          <div class="field">
+            <label>Parent/Guardian Name <span class="required">*</span></label>
+            <input type="text" id="rParent" required />
+          </div>
+
+          <!-- 2. Email Address -->
+          <div class="field">
+            <label>Email Address <span class="required">*</span></label>
+            <input type="email" id="rEmail" required />
+          </div>
+
+          <!-- 3. Phone Number -->
+          <div class="field">
+            <label>Phone Number <span class="required">*</span></label>
+            <input type="tel" id="rPhone" required />
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 4. Child's Name -->
+          <div class="field">
+            <label>Child's Name <span class="required">*</span></label>
+            <input type="text" id="rChildName" required />
+          </div>
+
+          <!-- 5. Child's Grade (Fall 2026) -->
+          <div class="field">
+            <label>Child's Grade (Fall 2026) <span class="required">*</span></label>
+            <select id="rGrade" required>
+              <option value="">Select grade</option>
+              <option value="PreK">PreK</option>
+              <option value="Kindergarten">Kindergarten</option>
+              <option value="1st Grade">1st Grade</option>
+              <option value="2nd Grade">2nd Grade</option>
+              <option value="3rd Grade">3rd Grade</option>
+              <option value="4th Grade">4th Grade</option>
+              <option value="5th Grade">5th Grade</option>
+              <option value="6th - 8th Grade">6th - 8th Grade</option>
+            </select>
+          </div>
+
+          <!-- 6. Current School -->
+          <div class="field">
+            <label>Current School</label>
+            <input type="text" id="rSchool" />
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 7. Which program are you interested in? -->
+          <div class="field">
+            <label class="field-label">Which program are you interested in? <span class="required">*</span></label>
+            <div class="radio-group" id="programGroup">
+              <label class="radio-item">
+                <input type="radio" name="program" value="Reading Club" required />
+                <span>Reading Club</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="program" value="Math Club" />
+                <span>Math Club</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="program" value="Both Reading & Math" />
+                <span>Both Reading &amp; Math</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 9. How did you hear about this program? -->
+          <div class="field">
+            <label class="field-label">How did you hear about this program?</label>
+            <div class="checkbox-group" id="hearGroup">
+              <label class="checkbox-item">
+                <input type="checkbox" name="hear" value="School flyer" />
+                <span>School flyer</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" name="hear" value="Facebook / Social media" />
+                <span>Facebook / Social media</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" name="hear" value="Friend / Word of mouth" />
+                <span>Friend / Word of mouth</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" name="hear" value="Previous student" />
+                <span>Previous student</span>
+              </label>
+              <label class="checkbox-item">
+                <input type="checkbox" name="hear" value="Other" />
+                <span>Other</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- 10. Agreement -->
+          <div class="agree-field">
+            <label>
+              <input type="checkbox" id="rAgree" required />
+              <span>I understand this form is an interest/registration request and that placement will be confirmed by email. <span class="required">*</span></span>
+            </label>
+          </div>
+
+          <p class="error-msg" id="regError"></p>
+          <button type="submit" class="btn btn--primary" id="submitBtn">Submit Registration</button>
+        </form>
+      </div>
+
+      <!-- Success -->
+      <div class="success" id="successSection">
+        <div class="success__icon">&#127891;</div>
+        <h2>Thank You!</h2>
+        <p>Your registration has been received. We'll contact you soon to schedule a one-on-one assessment for your child. Placement will be confirmed by email.</p>
+        <p>We look forward to meeting your family!</p>
+        <a href="index.html">&larr; Back to Reading Club</a>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-link">&larr; Back to Reading Club website</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    (() => {
+      const SUPABASE_URL = 'https://jllsrbnryhmxislzorsa.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsbHNyYm5yeWhteGlzbHpvcnNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDI3NDgsImV4cCI6MjA4OTA3ODc0OH0.C-ynMRk15KhIkS5eS3VTc_lMqO1CcAPvNV9lUnq08aY';
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Highlight selected radio/checkbox items
+      document.querySelectorAll('.radio-item input, .checkbox-item input').forEach(input => {
+        input.addEventListener('change', () => {
+          if (input.type === 'radio') {
+            input.closest('.radio-group, .checkbox-group').querySelectorAll('.radio-item').forEach(el => el.classList.remove('selected'));
+          }
+          if (input.checked) {
+            input.closest('.radio-item, .checkbox-item').classList.add('selected');
+          } else {
+            input.closest('.radio-item, .checkbox-item').classList.remove('selected');
+          }
+        });
+      });
+
+      const form = document.getElementById('regForm');
+      const errorEl = document.getElementById('regError');
+      const submitBtn = document.getElementById('submitBtn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.style.display = 'none';
+
+        // Validate required fields
+        const parent = document.getElementById('rParent').value.trim();
+        const email = document.getElementById('rEmail').value.trim();
+        const phone = document.getElementById('rPhone').value.trim();
+        const childName = document.getElementById('rChildName').value.trim();
+        const grade = document.getElementById('rGrade').value;
+        const program = document.querySelector('input[name="program"]:checked');
+        const agree = document.getElementById('rAgree').checked;
+
+        if (!parent || !email || !phone || !childName || !grade || !program || !agree) {
+          errorEl.textContent = 'Please fill out all required fields (*).';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+
+        // Collect "how did you hear" values
+        const hearChecked = Array.from(document.querySelectorAll('input[name="hear"]:checked')).map(cb => cb.value);
+
+        const school = document.getElementById('rSchool').value.trim();
+
+        // Map program to club value
+        const clubMap = { 'Reading Club': 'Reading', 'Math Club': 'Math', 'Both Reading & Math': 'Reading + Math' };
+        const club = clubMap[program.value] || program.value;
+
+        // Build notes
+        const notesParts = [];
+        if (school) notesParts.push('School: ' + school);
+        if (hearChecked.length > 0) notesParts.push('Heard about us: ' + hearChecked.join(', '));
+
+        const student = {
+          name: childName,
+          grade: grade,
+          status: 'Survey Submitted',
+          parent: parent,
+          phone: phone,
+          email: email,
+          club: club,
+          notes: notesParts.join('\n'),
+        };
+
+        const { error } = await supabase.from('students').insert(student);
+
+        if (error) {
+          errorEl.textContent = 'Something went wrong. Please try again or call (505) 306-8309.';
+          errorEl.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Registration';
+          return;
+        }
+
+        // Log activity
+        await supabase.from('activity_log').insert({
+          text: 'New registration: ' + childName + ' (' + grade + ', ' + club + ') — submitted by ' + parent
+        });
+
+        // Show success
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('successSection').style.display = 'block';
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading Club | Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- ===== LOGIN SCREEN ===== -->
+  <div class="login" id="loginScreen">
+    <div class="login__card">
+      <div class="login__icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h1>Reading Club Admin</h1>
+      <p>Enter your password to access the dashboard.</p>
+      <form id="loginForm">
+        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" />
+        <button type="submit" class="btn btn--primary">Log In</button>
+      </form>
+      <p class="login__error" id="loginError"></p>
+      <a href="index.html" class="login__back">&larr; Back to website</a>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="dashboard" id="dashboard" style="display:none;">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <span class="topbar__logo">&#9733; Reading Club</span>
+        <span class="topbar__label">Admin Dashboard</span>
+      </div>
+      <div class="topbar__right">
+        <button class="mic-btn" id="micBtn" title="Voice Command">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <span class="mic-btn__status" id="micStatus"></span>
+        </button>
+        <a href="index.html" class="topbar__link">Website</a>
+        <button class="topbar__logout" id="logoutBtn">Log Out</button>
+      </div>
+    </header>
+
+    <!-- Voice feedback -->
+    <div class="voice-bar" id="voiceBar" style="display:none;">
+      <div class="voice-bar__inner">
+        <span class="voice-bar__dot"></span>
+        <span class="voice-bar__text" id="voiceText">Listening...</span>
+        <button class="voice-bar__close" id="voiceClose">&times;</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="dash-tabs">
+      <button class="dash-tab active" data-tab="overview">Overview</button>
+      <button class="dash-tab" data-tab="students">Students <span class="new-badge" id="newBadge" style="display:none;"></span></button>
+      <button class="dash-tab" data-tab="attendance">Attendance</button>
+      <button class="dash-tab" data-tab="payments">Payments</button>
+      <button class="dash-tab" data-tab="cohorts">Cohorts</button>
+    </nav>
+
+    <!-- ===== OVERVIEW TAB ===== -->
+    <div class="dash-panel active" id="panel-overview">
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi__value" id="kpiStudents">0</div>
+          <div class="kpi__label">Total Students</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="kpiAttendance">0%</div>
+          <div class="kpi__label">Attendance Rate</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="kpiPaid">0</div>
+          <div class="kpi__label">Payments Received</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="kpiUnpaid">0</div>
+          <div class="kpi__label">Payments Pending</div>
+        </div>
+      </div>
+      <div class="recent-section">
+        <h3>Recent Activity</h3>
+        <div class="activity-log" id="activityLog">
+          <p class="empty-state">No activity yet. Start by adding students.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STUDENTS TAB ===== -->
+    <div class="dash-panel" id="panel-students">
+      <div class="panel-header">
+        <h3>Student Pipeline</h3>
+        <button class="btn btn--primary btn--sm" id="addStudentBtn">+ New Student</button>
+      </div>
+
+      <!-- Pipeline stages -->
+      <div class="pipeline">
+        <button class="pipeline__stage active" data-stage="all">
+          All <span class="pipeline__count" id="countAll">0</span>
+        </button>
+        <span class="pipeline__arrow">&rarr;</span>
+        <button class="pipeline__stage" data-stage="Survey Submitted">
+          Survey Submitted <span class="pipeline__count" id="countSurvey">0</span>
+        </button>
+        <span class="pipeline__arrow">&rarr;</span>
+        <button class="pipeline__stage" data-stage="Contacted">
+          Contacted <span class="pipeline__count" id="countContacted">0</span>
+        </button>
+        <span class="pipeline__arrow">&rarr;</span>
+        <button class="pipeline__stage" data-stage="Assessment Scheduled">
+          Assessment Scheduled <span class="pipeline__count" id="countScheduled">0</span>
+        </button>
+        <span class="pipeline__arrow">&rarr;</span>
+        <button class="pipeline__stage" data-stage="Assessed">
+          Assessed <span class="pipeline__count" id="countAssessed">0</span>
+        </button>
+        <span class="pipeline__arrow">&rarr;</span>
+        <button class="pipeline__stage" data-stage="Placed">
+          Placed <span class="pipeline__count" id="countPlaced">0</span>
+        </button>
+      </div>
+
+      <!-- Student cards -->
+      <div class="student-cards" id="studentCards">
+        <p class="empty-state" id="studentsEmpty">No students yet. Click "+ New Student" to get started.</p>
+      </div>
+
+      <!-- Add/Edit Student Modal -->
+      <div class="modal" id="studentModal" style="display:none;">
+        <div class="modal__card modal__card--wide">
+          <div class="modal__header">
+            <h3 id="studentModalTitle">New Student</h3>
+            <button class="modal__close" id="studentModalClose">&times;</button>
+          </div>
+          <form id="studentForm">
+            <input type="hidden" id="studentId" />
+
+            <!-- Stage selector -->
+            <div class="field" style="margin-bottom:20px;">
+              <label>Pipeline Stage</label>
+              <select id="sStatus" class="stage-select">
+                <option value="Survey Submitted">1. Survey Submitted</option>
+                <option value="Contacted">2. Contacted</option>
+                <option value="Assessment Scheduled">3. Assessment Scheduled</option>
+                <option value="Assessed">4. Assessed</option>
+                <option value="Placed">5. Placed</option>
+              </select>
+            </div>
+
+            <div class="form-section">
+              <h4 class="form-section__title">Student &amp; Parent Info</h4>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Student Name</label>
+                  <input type="text" id="sName" required />
+                </div>
+                <div class="field">
+                  <label>Grade</label>
+                  <input type="text" id="sGrade" />
+                </div>
+                <div class="field">
+                  <label>Parent/Guardian Name</label>
+                  <input type="text" id="sParent" />
+                </div>
+                <div class="field">
+                  <label>Phone</label>
+                  <input type="tel" id="sPhone" />
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input type="email" id="sEmail" />
+                </div>
+                <div class="field">
+                  <label>Club</label>
+                  <select id="sClub">
+                    <option value="Reading">Reading</option>
+                    <option value="Math">Math</option>
+                    <option value="Test Prep">Test Prep</option>
+                    <option value="Reading + Math">Reading + Math</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Assessment section - visible from stage 3+ -->
+            <div class="form-section" id="assessmentSection">
+              <h4 class="form-section__title">Assessment</h4>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Assessment Date</label>
+                  <input type="date" id="sAssessmentDate" />
+                </div>
+                <div class="field">
+                  <label>Assessment Notes</label>
+                  <textarea id="sAssessmentNotes" rows="2" placeholder="Observations, challenges, strengths..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Placement section - visible from stage 5 -->
+            <div class="form-section" id="placementSection">
+              <h4 class="form-section__title">Placement</h4>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Teacher</label>
+                  <select id="sTeacher">
+                    <option value="">Select Teacher</option>
+                    <option value="Jennifer Jaramillo">Jennifer Jaramillo</option>
+                    <option value="Dale Jaramillo">Dale Jaramillo</option>
+                    <option value="Stephanie Brennen">Stephanie Brennen</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Group</label>
+                  <select id="sGroup">
+                    <option value="">Select Group</option>
+                    <option value="Mon/Wed">Monday / Wednesday</option>
+                    <option value="Tue/Thu">Tuesday / Thursday</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Time</label>
+                  <select id="sTime">
+                    <option value="">Select Time</option>
+                    <option value="2:15-3:15 PM">2:15 - 3:15 PM</option>
+                    <option value="4:00-5:00 PM">4:00 - 5:00 PM</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Reading Mastery Level</label>
+                  <select id="sLevel">
+                    <option value="">N/A</option>
+                    <option value="K">K</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Lesson (1-180)</label>
+                  <input type="number" id="sLesson" min="1" max="180" placeholder="e.g. 1" />
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Notes</label>
+              <textarea id="sNotes" rows="2"></textarea>
+            </div>
+            <div class="modal__actions">
+              <button type="button" class="btn btn--outline-dark" id="studentCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn--primary">Save Student</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ATTENDANCE TAB ===== -->
+    <div class="dash-panel" id="panel-attendance">
+      <div class="panel-header">
+        <h3>Attendance</h3>
+        <div class="panel-header__controls">
+          <input type="date" id="attendanceDate" />
+          <select id="attendanceClub">
+            <option value="">All Clubs</option>
+            <option value="Reading">Reading</option>
+            <option value="Math">Math</option>
+            <option value="Test Prep">Test Prep</option>
+          </select>
+          <button class="btn btn--primary btn--sm" id="saveAttendanceBtn">Save Attendance</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="attendanceTable">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Club</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="attendanceBody"></tbody>
+        </table>
+        <p class="empty-state" id="attendanceEmpty">No students enrolled. Add students first.</p>
+      </div>
+      <div class="attendance-history">
+        <h3>Attendance History</h3>
+        <div class="table-wrap">
+          <table class="data-table" id="historyTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Student</th>
+                <th>Club</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+          <p class="empty-state" id="historyEmpty">No attendance records yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENTS TAB ===== -->
+    <div class="dash-panel" id="panel-payments">
+
+      <!-- Month selector & summary -->
+      <div class="panel-header">
+        <h3>Monthly Payments</h3>
+        <div class="panel-header__controls">
+          <button class="btn btn--sm btn--outline-dark" id="prevMonthBtn">&larr;</button>
+          <input type="month" id="billingMonth" />
+          <button class="btn btn--sm btn--outline-dark" id="nextMonthBtn">&rarr;</button>
+        </div>
+      </div>
+
+      <!-- KPI summary for the month -->
+      <div class="kpi-row kpi-row--pay">
+        <div class="kpi kpi--green">
+          <div class="kpi__value" id="payKpiCollected">$0</div>
+          <div class="kpi__label">Collected This Month</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="payKpiPaid">0</div>
+          <div class="kpi__label">Students Paid</div>
+        </div>
+        <div class="kpi kpi--red">
+          <div class="kpi__value" id="payKpiOwed">0</div>
+          <div class="kpi__label">Still Owe</div>
+        </div>
+      </div>
+
+      <!-- Student billing table for selected month -->
+      <div class="table-wrap">
+        <table class="data-table" id="billingTable">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Club</th>
+              <th>Status</th>
+              <th>Date Paid</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="billingBody"></tbody>
+        </table>
+        <p class="empty-state" id="billingEmpty">No students enrolled. Add students first.</p>
+      </div>
+
+      <!-- Full payment history -->
+      <div class="pay-history">
+        <h3>All Payment History</h3>
+        <div class="table-wrap">
+          <table class="data-table" id="payHistoryTable">
+            <thead>
+              <tr>
+                <th>Date Paid</th>
+                <th>Student</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Month</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payHistoryBody"></tbody>
+          </table>
+          <p class="empty-state" id="payHistoryEmpty">No payment history yet.</p>
+        </div>
+      </div>
+
+      <!-- Mark Paid Modal -->
+      <div class="modal" id="paymentModal" style="display:none;">
+        <div class="modal__card">
+          <div class="modal__header">
+            <h3 id="payModalTitle">Mark Payment</h3>
+            <button class="modal__close" id="paymentModalClose">&times;</button>
+          </div>
+          <form id="paymentForm">
+            <input type="hidden" id="pStudentId" />
+            <input type="hidden" id="pStudentName" />
+            <div class="pay-student-name" id="payStudentDisplay"></div>
+            <div class="form-grid">
+              <div class="field">
+                <label>Amount ($)</label>
+                <input type="number" id="pAmount" step="0.01" min="0" required />
+              </div>
+              <div class="field">
+                <label>Date Paid</label>
+                <input type="date" id="pDate" required />
+              </div>
+            </div>
+            <div class="field">
+              <label>Payment Method</label>
+              <div class="pay-methods" id="payMethods">
+                <button type="button" class="pay-method-btn" data-method="Cash">Cash</button>
+                <button type="button" class="pay-method-btn" data-method="Check">Check</button>
+                <button type="button" class="pay-method-btn" data-method="Zelle">Zelle</button>
+                <button type="button" class="pay-method-btn" data-method="Venmo">Venmo</button>
+              </div>
+              <input type="hidden" id="pMethod" value="" />
+            </div>
+            <div class="field">
+              <label>Notes (optional)</label>
+              <textarea id="pNotes" rows="2"></textarea>
+            </div>
+            <div class="modal__actions">
+              <button type="button" class="btn btn--outline-dark" id="paymentCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn--primary">Save Payment</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COHORTS TAB ===== -->
+    <div class="dash-panel" id="panel-cohorts">
+      <div class="panel-header">
+        <h3>Monthly Cohorts</h3>
+        <button class="btn btn--primary btn--sm" id="addCohortBtn">+ New Cohort</button>
+      </div>
+
+      <!-- Cohort Cards -->
+      <div class="cohort-list" id="cohortList">
+        <p class="empty-state" id="cohortsEmpty">No cohorts yet. Click "+ New Cohort" to create one.</p>
+      </div>
+
+      <!-- New Cohort Modal -->
+      <div class="modal" id="cohortModal" style="display:none;">
+        <div class="modal__card">
+          <div class="modal__header">
+            <h3 id="cohortModalTitle">New Cohort</h3>
+            <button class="modal__close" id="cohortModalClose">&times;</button>
+          </div>
+          <form id="cohortForm">
+            <input type="hidden" id="cohortId" />
+            <div class="form-grid">
+              <div class="field">
+                <label>Cohort Name</label>
+                <input type="text" id="cName" placeholder="e.g. June 2026 Reading Group A" required />
+              </div>
+              <div class="field">
+                <label>Teacher Name</label>
+                <input type="text" id="cTeacher" placeholder="e.g. Mrs. Jaramillo" required />
+              </div>
+              <div class="field">
+                <label>Club</label>
+                <select id="cClub">
+                  <option value="Reading">Reading</option>
+                  <option value="Math">Math</option>
+                  <option value="Test Prep">Test Prep</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Month</label>
+                <input type="month" id="cMonth" required />
+              </div>
+              <div class="field">
+                <label>Max Students</label>
+                <input type="number" id="cMaxStudents" min="1" max="10" value="10" />
+              </div>
+              <div class="field">
+                <label>Days</label>
+                <select id="cSchedule">
+                  <option value="Mon-Thu">Monday - Thursday</option>
+                  <option value="Mon-Wed">Monday - Wednesday</option>
+                  <option value="Tue-Thu">Tuesday - Thursday</option>
+                  <option value="Mon-Fri">Monday - Friday</option>
+                  <option value="Custom">Custom</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Time Slot</label>
+                <select id="cTimeSlot">
+                  <option value="Session 1 (Morning)">Session 1 (Morning)</option>
+                  <option value="Session 2 (Midday)">Session 2 (Midday)</option>
+                  <option value="Session 3 (Afternoon)">Session 3 (Afternoon)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select id="cStatus">
+                  <option value="Active">Active</option>
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Notes</label>
+              <textarea id="cNotes" rows="2" placeholder="Schedule, goals, etc."></textarea>
+            </div>
+            <div class="modal__actions">
+              <button type="button" class="btn btn--outline-dark" id="cohortCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn--primary">Save Cohort</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Assign Students Modal -->
+      <div class="modal" id="assignModal" style="display:none;">
+        <div class="modal__card">
+          <div class="modal__header">
+            <h3 id="assignModalTitle">Assign Students</h3>
+            <button class="modal__close" id="assignModalClose">&times;</button>
+          </div>
+          <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:8px;">Check students to add to this cohort.</p>
+          <p class="assign-counter" id="assignCounter">0 / 10 spots filled</p>
+          <div id="assignStudentList" class="assign-list"></div>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--outline-dark" id="assignCancelBtn">Cancel</button>
+            <button type="button" class="btn btn--primary" id="assignSaveBtn">Save Assignments</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
