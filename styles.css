@@ -260,6 +260,11 @@ a:hover { color: var(--clr-sun-warm); }
   margin-bottom: 12px;
 }
 
+.section__cta {
+  text-align: center;
+  margin-top: 48px;
+}
+
 .check-list {
   list-style: none;
   padding: 0;
