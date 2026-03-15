@@ -93,11 +93,32 @@
     document.getElementById('topbarUser').textContent = user;
   }
 
+  function applyRolePermissions() {
+    const role = sessionStorage.getItem('rc_role') || 'teacher';
+    if (role !== 'admin') {
+      // Hide admin-only tabs
+      document.querySelectorAll('.dash-tab').forEach(tab => {
+        const t = tab.dataset.tab;
+        if (t === 'overview' || t === 'students' || t === 'payments') {
+          tab.style.display = 'none';
+        }
+      });
+      // Default to Current Students tab
+      document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+      const rosterTab = document.querySelector('.dash-tab[data-tab="roster"]');
+      if (rosterTab) rosterTab.classList.add('active');
+      const rosterPanel = document.getElementById('panel-roster');
+      if (rosterPanel) rosterPanel.classList.add('active');
+    }
+  }
+
   // Check session on page load
   if (isSessionValid()) {
     loginScreen.style.display = 'none';
     dashboard.style.display = 'block';
     showLoggedInUser();
+    applyRolePermissions();
     startSecurityListeners();
     initDashboard();
   } else {
@@ -145,6 +166,7 @@
     loginScreen.style.display = 'none';
     dashboard.style.display = 'block';
     showLoggedInUser();
+    applyRolePermissions();
     startSecurityListeners();
     await addActivity(`${user.display_name} logged in`);
     initDashboard();
