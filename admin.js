@@ -490,15 +490,15 @@
     // Filter students strictly by schedule — only show matching group
     let dayStudents = placed.filter(s => s.student_group === schedFilter);
 
-    // Group students by: teacher + time_slot + level
+    // Group students by: teacher + group + time + RM level + lesson
     const groupMap = {};
     dayStudents.forEach(s => {
-      const key = `${s.teacher || 'Unassigned'}||${s.time_slot || 'No Time'}||${s.level || 'No Level'}`;
+      const key = `${s.teacher || 'Unassigned'}||${s.student_group || ''}||${s.time_slot || 'No Time'}||${s.level || 'No Level'}||${s.lesson || '0'}`;
       if (!groupMap[key]) groupMap[key] = [];
       groupMap[key].push(s);
     });
 
-    // Sort groups by teacher then time
+    // Sort groups by teacher then time then level
     const groupKeys = Object.keys(groupMap).sort();
 
     // Day info
@@ -521,21 +521,15 @@
 
     let html = '<div class="pods-grid">';
     groupKeys.forEach(key => {
-      const [teacher, timeSlot, level] = key.split('||');
+      const [teacher, group, timeSlot, level, lesson] = key.split('||');
       const students = groupMap[key];
       const groupId = key.replace(/[^a-zA-Z0-9]/g, '_');
-
-      // Sort students by lesson number
-      students.sort((a, b) => (a.lesson || 0) - (b.lesson || 0));
 
       const studentsHtml = students.map(s => {
         const existing = todayAtt[s.id] || null;
         return `
           <div class="pod-student">
-            <div class="pod-student__info">
-              <div class="pod-student__name">${esc(s.name)}</div>
-              <div class="pod-student__lesson">Lesson ${s.lesson || '?'}</div>
-            </div>
+            <div class="pod-student__name">${esc(s.name)}</div>
             <div class="att-status">
               <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setGroupAtt(this)">P</button>
               <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setGroupAtt(this)">A</button>
@@ -548,7 +542,7 @@
         <div class="pod">
           <div class="pod__header">
             <div class="pod__teacher">${esc(teacher)}</div>
-            <div class="pod__info">RM ${esc(level)} &bull; ${esc(timeSlot)} &bull; ${students.length} students</div>
+            <div class="pod__info">RM ${esc(level)} &bull; Lesson ${esc(lesson)} &bull; ${esc(timeSlot)} &bull; ${students.length} student(s)</div>
           </div>
           <div class="pod__students">
             ${studentsHtml}
