@@ -209,40 +209,9 @@ a:hover { color: var(--clr-sun-warm); }
   filter: drop-shadow(0 2px 6px rgba(255,255,255,0.6));
 }
 
-.hero__summer {
+.hero__summer-open {
   text-align: center;
   margin-bottom: 20px;
-}
-
-.hero__summer-text {
-  font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 900;
-  color: #C8962E;
-  letter-spacing: 8px;
-  line-height: 1.1;
-  margin-bottom: 4px;
-}
-
-.hero__summer-dates {
-  font-family: var(--font-body);
-  font-size: clamp(1rem, 2.5vw, 1.6rem);
-  font-weight: 700;
-  color: var(--clr-text);
-  letter-spacing: 12px;
-  margin-bottom: 0;
-}
-
-.hero__summer-year {
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 900;
-  color: var(--clr-text);
-  line-height: 1.2;
-  margin-bottom: 8px;
-}
-
-.hero__summer-open {
   font-family: var(--font-heading);
   font-size: clamp(1rem, 2.5vw, 1.5rem);
   font-weight: 900;
