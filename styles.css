@@ -213,13 +213,13 @@ a:hover { color: var(--clr-sun-warm); }
   text-align: center;
   margin-bottom: 20px;
   font-family: var(--font-heading);
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-size: clamp(0.7rem, 1.5vw, 0.95rem);
   font-weight: 900;
   color: var(--clr-green-dark);
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   background: var(--clr-sun);
   display: inline-block;
-  padding: 8px 28px;
+  padding: 6px 20px;
   border-radius: 4px;
 }
 
@@ -256,8 +256,8 @@ a:hover { color: var(--clr-sun-warm); }
 }
 
 .hero__sub {
-  font-size: 1.15rem;
-  color: var(--clr-text-light);
+  font-size: 1.3rem;
+  color: #000000;
   max-width: 600px;
   margin: 0 auto 40px;
   line-height: 1.8;
