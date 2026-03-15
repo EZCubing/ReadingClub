@@ -381,7 +381,7 @@
 
   async function renderRoster() {
     const allStudents = await getStudents();
-    const placed = allStudents.filter(s => s.status === 'Placed');
+    const placed = allStudents.filter(s => s.status === 'Placed' || !s.status);
 
     // Apply filters
     const teacherFilter = rosterFilterTeacher.value;
@@ -405,9 +405,11 @@
       body.innerHTML = '';
       empty.style.display = 'block';
       empty.textContent = placed.length === 0 ? 'No current students yet. Students appear here once they are placed through the pipeline.' : 'No students match the selected filters.';
+      document.getElementById('rosterTable').style.display = 'none';
       return;
     }
     empty.style.display = 'none';
+    document.getElementById('rosterTable').style.display = '';
 
     // Sort by teacher, then group, then name
     filtered.sort((a, b) => {
