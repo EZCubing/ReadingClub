@@ -402,7 +402,7 @@
           <span><strong>Teacher:</strong> ${esc(s.teacher)}</span>
           <span><strong>Group:</strong> ${esc(s.student_group)}</span>
           <span><strong>Time:</strong> ${esc(s.time_slot)}</span>
-          <span>${rmBadge}</span>
+          <span><strong>RM Level:</strong> ${s.level ? 'RM ' + esc(s.level) : '—'}</span>
           <span><strong>Lesson:</strong> ${s.lesson || '—'}</span>
         </div>`;
       }
