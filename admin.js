@@ -480,53 +480,9 @@
     });
   });
 
-  // Group modal
-  const groupModal = document.getElementById('groupModal');
-  const groupForm = document.getElementById('groupForm');
-
-  document.getElementById('addGroupBtn').addEventListener('click', () => {
-    document.getElementById('groupModalTitle').textContent = 'New Group';
-    groupForm.reset();
-    document.getElementById('gId').value = '';
-    // Default schedule based on current day
-    const day = getSelectedDay();
-    const sched = DAY_TO_SCHEDULE[day] || 'Mon/Wed';
-    document.getElementById('gSchedule').value = sched;
-    groupModal.style.display = 'flex';
-  });
-
-  document.getElementById('groupModalClose').addEventListener('click', () => groupModal.style.display = 'none');
-  document.getElementById('groupCancelBtn').addEventListener('click', () => groupModal.style.display = 'none');
-  groupModal.addEventListener('click', (e) => { if (e.target === groupModal) groupModal.style.display = 'none'; });
-
-  groupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('gId').value;
-    const group = {
-      name: document.getElementById('gName').value,
-      teacher: document.getElementById('gTeacher').value,
-      schedule: document.getElementById('gSchedule').value,
-      time_slot: document.getElementById('gTime').value,
-      club: document.getElementById('gClub').value,
-      max_students: parseInt(document.getElementById('gMax').value) || 10,
-      status: 'Active',
-    };
-
-    if (id) {
-      const { error } = await supabase.from('cohorts').update(group).eq('id', id);
-      if (error) { alert('Error: ' + error.message); return; }
-      await addActivity(`Updated group: ${group.name}`);
-    } else {
-      const { error } = await supabase.from('cohorts').insert(group);
-      if (error) { alert('Error: ' + error.message); return; }
-      await addActivity(`Created group: ${group.name} (${group.teacher}, ${group.schedule})`);
-    }
-    groupModal.style.display = 'none';
-    await refreshAll();
-  });
-
+  // Auto-generate groups from student data
   async function renderGroups() {
-    const [cohorts, allStudents, allAtt] = await Promise.all([getCohorts(), getStudents(), getAttendance()]);
+    const [allStudents, allAtt] = await Promise.all([getStudents(), getAttendance()]);
     const container = document.getElementById('groupCards');
     const empty = document.getElementById('groupsEmpty');
     const date = groupDateInput.value;
@@ -534,26 +490,39 @@
     const scheduleForDay = DAY_TO_SCHEDULE[day];
     const schedFilter = groupScheduleFilter.value;
 
-    // Filter groups that meet on this day
-    let filtered = cohorts.filter(c => {
-      if (c.schedule === 'Mon/Wed' && (day === 'Monday' || day === 'Wednesday')) return true;
-      if (c.schedule === 'Tue/Thu' && (day === 'Tuesday' || day === 'Thursday')) return true;
+    const placed = allStudents.filter(s => s.status === 'Placed' || !s.status);
+
+    // Filter students who meet on this day
+    let dayStudents = placed.filter(s => {
+      if (s.student_group === 'Mon/Wed' && (day === 'Monday' || day === 'Wednesday')) return true;
+      if (s.student_group === 'Tue/Thu' && (day === 'Tuesday' || day === 'Thursday')) return true;
       return false;
     });
 
     if (schedFilter) {
-      filtered = filtered.filter(c => c.schedule === schedFilter);
+      dayStudents = dayStudents.filter(s => s.student_group === schedFilter);
     }
+
+    // Group students by: teacher + time_slot + level
+    const groupMap = {};
+    dayStudents.forEach(s => {
+      const key = `${s.teacher || 'Unassigned'}||${s.time_slot || 'No Time'}||${s.level || 'No Level'}`;
+      if (!groupMap[key]) groupMap[key] = [];
+      groupMap[key].push(s);
+    });
+
+    // Sort groups by teacher then time
+    const groupKeys = Object.keys(groupMap).sort();
 
     // Day info
     const dayInfo = document.getElementById('dayInfo');
     const dateLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    dayInfo.innerHTML = `<strong>${dateLabel}</strong> — ${filtered.length} group(s) meeting ${scheduleForDay ? '(' + scheduleForDay + ')' : ''}`;
+    dayInfo.innerHTML = `<strong>${dateLabel}</strong> — ${groupKeys.length} group(s), ${dayStudents.length} student(s) ${scheduleForDay ? '(' + scheduleForDay + ')' : ''}`;
 
-    if (filtered.length === 0) {
+    if (groupKeys.length === 0) {
       container.innerHTML = '';
       empty.style.display = 'block';
-      empty.textContent = cohorts.length === 0 ? 'No groups yet. Click "+ New Group" to create one.' : 'No groups meeting on ' + day + '.';
+      empty.textContent = placed.length === 0 ? 'No current students. Add students first.' : 'No students scheduled for ' + day + '.';
       return;
     }
     empty.style.display = 'none';
@@ -563,61 +532,57 @@
     allAtt.filter(a => a.date === date).forEach(a => { todayAtt[a.student_id] = a.status; });
 
     let html = '';
-    for (const g of filtered) {
-      const cs = await getCohortStudents(g.id);
-      const maxStudents = g.max_students || 10;
+    groupKeys.forEach(key => {
+      const [teacher, timeSlot, level] = key.split('||');
+      const students = groupMap[key];
+      const groupId = key.replace(/[^a-zA-Z0-9]/g, '_');
 
-      const studentsHtml = cs.length > 0 ? cs.map(s => {
-        const name = s.students ? s.students.name : 'Unknown';
-        const sid = s.student_id;
-        const existing = todayAtt[sid] || null;
+      // Sort students by lesson number
+      students.sort((a, b) => (a.lesson || 0) - (b.lesson || 0));
+
+      const studentsHtml = students.map(s => {
+        const existing = todayAtt[s.id] || null;
         return `<tr>
-          <td><strong>${esc(name)}</strong></td>
+          <td><strong>${esc(s.name)}</strong></td>
+          <td>RM ${esc(s.level || '?')} — Lesson ${s.lesson || '?'}</td>
           <td>
             <div class="att-status">
-              <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${g.id}" data-student="${sid}" data-name="${esc(name)}" data-status="P" onclick="setGroupAtt(this)">Present</button>
-              <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${g.id}" data-student="${sid}" data-name="${esc(name)}" data-status="A" onclick="setGroupAtt(this)">Absent</button>
-              <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-group="${g.id}" data-student="${sid}" data-name="${esc(name)}" data-status="L" onclick="setGroupAtt(this)">Late</button>
+              <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setGroupAtt(this)">Present</button>
+              <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setGroupAtt(this)">Absent</button>
+              <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setGroupAtt(this)">Late</button>
             </div>
           </td>
         </tr>`;
-      }).join('') : '';
+      }).join('');
+
+      const groupTitle = `${teacher} — RM ${level}`;
 
       html += `
         <div class="group-card">
           <div class="group-card__header">
             <div>
-              <div class="group-card__title">${esc(g.name)}</div>
+              <div class="group-card__title">${esc(groupTitle)}</div>
               <div class="group-card__meta">
-                <span>${esc(g.teacher)}</span>
-                <span>${esc(g.schedule)}</span>
-                <span>${esc(g.time_slot)}</span>
-                <span>${esc(g.club)}</span>
-                <span>${cs.length}/${maxStudents} students</span>
+                <span>${esc(students[0].student_group)}</span>
+                <span>${esc(timeSlot)}</span>
+                <span>${esc(students[0].club || 'Reading')}</span>
+                <span>${students.length} student(s)</span>
               </div>
-            </div>
-            <div class="group-card__actions-top">
-              <button onclick="assignGroupStudents('${g.id}', ${maxStudents}, '${g.schedule}')">Assign Students</button>
-              <button onclick="editGroup('${g.id}')">Edit</button>
-              <button class="del" onclick="deleteGroup('${g.id}')">Delete</button>
             </div>
           </div>
           <div class="group-card__body">
-            ${cs.length > 0 ? `
-              <table class="group-card__attendance">
-                <thead><tr><th>Student</th><th>Attendance</th></tr></thead>
-                <tbody>${studentsHtml}</tbody>
-              </table>
-            ` : '<p class="no-students-msg">No students assigned yet. Click "Assign Students" to add them.</p>'}
+            <table class="group-card__attendance">
+              <thead><tr><th>Student</th><th>Level / Lesson</th><th>Attendance</th></tr></thead>
+              <tbody>${studentsHtml}</tbody>
+            </table>
           </div>
-          ${cs.length > 0 ? `
-            <div class="group-card__footer">
-              <button class="save-att-btn" onclick="saveGroupAttendance('${g.id}')">Save Attendance</button>
-            </div>
-          ` : ''}
+          <div class="group-card__footer">
+            <button class="save-att-btn" onclick="saveAutoGroupAttendance('${groupId}')">Save Attendance</button>
+          </div>
         </div>
       `;
-    }
+    });
+
     container.innerHTML = html;
   }
 
@@ -629,21 +594,19 @@
     const studentId = btn.dataset.student;
     const status = btn.dataset.status;
     if (!groupAttSelections[groupId]) groupAttSelections[groupId] = {};
-    groupAttSelections[groupId][studentId] = { status, name: btn.dataset.name };
+    groupAttSelections[groupId][studentId] = { status, name: btn.dataset.name, club: btn.dataset.club };
     btn.parentElement.querySelectorAll('.att-btn').forEach(b => b.className = 'att-btn');
     btn.classList.add('selected-' + status);
   };
 
-  window.saveGroupAttendance = async function(groupId) {
+  window.saveAutoGroupAttendance = async function(groupId) {
     const date = groupDateInput.value;
     if (!date) return alert('Please select a date.');
     const selections = groupAttSelections[groupId];
     if (!selections || Object.keys(selections).length === 0) return alert('Please mark attendance for at least one student.');
 
-    const cohorts = await getCohorts();
-    const group = cohorts.find(c => c.id === groupId);
     const records = Object.entries(selections).map(([studentId, info]) => ({
-      date, student_id: studentId, student_name: info.name, club: group ? group.club : '', status: info.status,
+      date, student_id: studentId, student_name: info.name, club: info.club || '', status: info.status,
     }));
 
     for (const r of records) {
@@ -652,110 +615,11 @@
     const { error } = await supabase.from('attendance').insert(records);
     if (error) { alert('Error: ' + error.message); return; }
 
-    await addActivity(`Attendance for ${group ? group.name : 'group'}: ${records.length} student(s) on ${date}`);
+    await addActivity(`Attendance saved: ${records.length} student(s) on ${date}`);
     delete groupAttSelections[groupId];
     await renderGroups();
     await renderOverview();
     alert(`Attendance saved for ${records.length} student(s).`);
-  };
-
-  // Assign students modal
-  const assignModal = document.getElementById('assignModal');
-  let currentAssignGroupId = null;
-  let currentAssignMax = 10;
-
-  window.assignGroupStudents = async function(groupId, maxStudents, schedule) {
-    currentAssignGroupId = groupId;
-    currentAssignMax = maxStudents || 10;
-    const cohorts = await getCohorts();
-    const group = cohorts.find(c => c.id === groupId);
-    document.getElementById('assignModalTitle').textContent = `Assign Students to ${group ? group.name : 'Group'}`;
-
-    const allStudents = await getStudents();
-    // Only show students on the matching schedule
-    const matchingStudents = allStudents.filter(s => (s.status === 'Placed' || !s.status) && s.student_group === schedule);
-    const assigned = await getCohortStudents(groupId);
-    const assignedIds = new Set(assigned.map(a => a.student_id));
-
-    const listEl = document.getElementById('assignStudentList');
-    if (matchingStudents.length === 0) {
-      listEl.innerHTML = '<p class="empty-state">No students on the ' + schedule + ' schedule. Add students to this schedule first.</p>';
-    } else {
-      listEl.innerHTML = matchingStudents.map(s => `
-        <label class="assign-item">
-          <input type="checkbox" value="${s.id}" ${assignedIds.has(s.id) ? 'checked' : ''} onchange="updateAssignCounter()" />
-          <span><strong>${esc(s.name)}</strong> — ${esc(s.teacher || '')} ${s.grade ? '(Grade ' + esc(s.grade) + ')' : ''}</span>
-        </label>
-      `).join('');
-    }
-    updateAssignCounter();
-    assignModal.style.display = 'flex';
-  };
-
-  window.updateAssignCounter = function() {
-    const checkboxes = document.querySelectorAll('#assignStudentList input[type="checkbox"]');
-    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
-    const counter = document.getElementById('assignCounter');
-    counter.textContent = `${checked} / ${currentAssignMax} spots filled`;
-    counter.classList.toggle('full', checked >= currentAssignMax);
-    checkboxes.forEach(cb => {
-      if (!cb.checked && checked >= currentAssignMax) {
-        cb.disabled = true;
-        cb.closest('.assign-item').style.opacity = '0.4';
-      } else {
-        cb.disabled = false;
-        cb.closest('.assign-item').style.opacity = '1';
-      }
-    });
-  };
-
-  document.getElementById('assignModalClose').addEventListener('click', () => assignModal.style.display = 'none');
-  document.getElementById('assignCancelBtn').addEventListener('click', () => assignModal.style.display = 'none');
-  assignModal.addEventListener('click', (e) => { if (e.target === assignModal) assignModal.style.display = 'none'; });
-
-  document.getElementById('assignSaveBtn').addEventListener('click', async () => {
-    if (!currentAssignGroupId) return;
-    const checkboxes = document.querySelectorAll('#assignStudentList input[type="checkbox"]');
-    const selectedIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
-
-    if (selectedIds.length > currentAssignMax) {
-      alert(`Max ${currentAssignMax} students. Please uncheck some.`);
-      return;
-    }
-
-    await supabase.from('cohort_students').delete().eq('cohort_id', currentAssignGroupId);
-    if (selectedIds.length > 0) {
-      const rows = selectedIds.map(sid => ({ cohort_id: currentAssignGroupId, student_id: sid }));
-      const { error } = await supabase.from('cohort_students').insert(rows);
-      if (error) { alert('Error: ' + error.message); return; }
-    }
-
-    await addActivity(`Updated group assignments (${selectedIds.length} students)`);
-    assignModal.style.display = 'none';
-    await renderGroups();
-  });
-
-  window.editGroup = async function(id) {
-    const cohorts = await getCohorts();
-    const g = cohorts.find(x => x.id === id);
-    if (!g) return;
-    document.getElementById('groupModalTitle').textContent = 'Edit Group';
-    document.getElementById('gId').value = g.id;
-    document.getElementById('gName').value = g.name || '';
-    document.getElementById('gTeacher').value = g.teacher || '';
-    document.getElementById('gSchedule').value = g.schedule || 'Mon/Wed';
-    document.getElementById('gTime').value = g.time_slot || '2:15-3:15 PM';
-    document.getElementById('gClub').value = g.club || 'Reading';
-    document.getElementById('gMax').value = g.max_students || 10;
-    groupModal.style.display = 'flex';
-  };
-
-  window.deleteGroup = async function(id) {
-    if (!confirm('Delete this group and all assignments?')) return;
-    const { error } = await supabase.from('cohorts').delete().eq('id', id);
-    if (error) { alert('Error: ' + error.message); return; }
-    await addActivity('Deleted a group');
-    await renderGroups();
   };
 
   // History
