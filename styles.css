@@ -248,6 +248,39 @@ a:hover { color: var(--clr-sun-warm); }
   line-height: 1.8;
 }
 
+.hero__stats {
+  max-width: 600px;
+  margin: 0 auto 40px;
+}
+
+.hero__stats p {
+  font-size: 1rem;
+  color: var(--clr-text-light);
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+
+.check-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+
+.check-list li {
+  padding: 6px 0 6px 28px;
+  position: relative;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.check-list li::before {
+  content: '\2713';
+  position: absolute;
+  left: 0;
+  color: var(--clr-green);
+  font-weight: 700;
+}
+
 .hero__actions {
   position: absolute;
   bottom: 40px;
