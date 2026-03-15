@@ -941,7 +941,11 @@
         const lastPayment = studentPayments.length > 0 ? studentPayments[0] : null;
 
         const paymentsDetail = studentPayments.map(p =>
-          `<div style="font-size:0.78rem;color:var(--text-light);">${esc(p.date)} — $${parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</div>`
+          `<div style="font-size:0.78rem;color:var(--text-light);display:flex;align-items:center;gap:8px;">
+            <span>${esc(p.date)} — $${parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
+            <button onclick="editPayment('${p.id}', ${parseFloat(p.amount)}, '${esc(p.method)}')" style="background:none;border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;padding:2px 8px;border-radius:4px;cursor:pointer;">Edit</button>
+            <button onclick="deletePayment('${p.id}')" style="background:none;border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;padding:2px 8px;border-radius:4px;cursor:pointer;">Del</button>
+          </div>`
         ).join('');
 
         return `<tr>
@@ -984,6 +988,19 @@
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity('Undid a payment');
     await refreshAll();
+  };
+
+  window.editPayment = async function(id, currentAmount, currentMethod) {
+    const newAmount = prompt('Enter corrected amount:', currentAmount);
+    if (newAmount === null) return;
+    const amount = parseFloat(newAmount);
+    if (isNaN(amount) || amount < 0) { alert('Please enter a valid amount.'); return; }
+
+    const { error } = await supabase.from('payments').update({ amount }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity(`Corrected payment to $${amount.toFixed(2)}`);
+    await renderPayments();
+    await renderOverview();
   };
 
   window.deletePayment = async function(id) {
