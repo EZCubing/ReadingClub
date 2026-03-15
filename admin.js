@@ -689,18 +689,16 @@
     // Advance lesson by 1 for ALL students (P, A, and L)
     for (const r of records) {
       const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
-      if (student && student.lesson) {
-        const newLesson = Math.min(student.lesson + 1, 180);
-        await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
-      }
+      const currentLesson = (student && student.lesson != null) ? student.lesson : 0;
+      const newLesson = Math.min(currentLesson + 1, 180);
+      await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
     }
 
     // Create missed lesson records for absent students (ML flag)
     const absentStudents = records.filter(r => r.status === 'A');
     for (const r of absentStudents) {
       const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
-      // The lesson was already advanced, so the missed lesson is the previous one
-      const missedLesson = student && student.lesson ? student.lesson - 1 : 0;
+      const missedLesson = (student && student.lesson != null) ? student.lesson - 1 : 0;
       await supabase.from('missed_lessons').insert({
         student_id: r.student_id,
         student_name: r.student_name,
