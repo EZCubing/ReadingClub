@@ -475,7 +475,6 @@
             <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setAtt(this)">Present</button>
             <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setAtt(this)">Absent</button>
             <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setAtt(this)">Late</button>
-            <button class="att-btn ${existing === 'E' ? 'selected-E' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="E" onclick="setAtt(this)">Excused</button>
           </div>
         </td>
       </tr>`;
@@ -547,7 +546,7 @@
     }
     empty.style.display = 'none';
 
-    const statusLabels = { P: 'Present', A: 'Absent', L: 'Late', E: 'Excused' };
+    const statusLabels = { P: 'Present', A: 'Absent', L: 'Late' };
     body.innerHTML = records.slice(0, 100).map(r => `
       <tr>
         <td>${esc(r.date)}</td>
@@ -565,7 +564,7 @@
   }
 
   window.changeAttStatus = async function(id, newStatus) {
-    const statusLabels = { P: 'Present', A: 'Absent', L: 'Late', E: 'Excused' };
+    const statusLabels = { P: 'Present', A: 'Absent', L: 'Late' };
     const { error } = await supabase.from('attendance').update({ status: newStatus }).eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity(`Changed attendance to ${statusLabels[newStatus]}`);
@@ -841,11 +840,11 @@
     const lower = cmd.toLowerCase();
     const students = await getStudents();
 
-    // Mark attendance: "mark [name] present/absent/late/excused"
-    const attMatch = lower.match(/mark\s+(.+?)\s+(present|absent|late|excused)/);
+    // Mark attendance: "mark [name] present/absent/late"
+    const attMatch = lower.match(/mark\s+(.+?)\s+(present|absent|late)/);
     if (attMatch) {
       const nameQuery = attMatch[1];
-      const statusMap = { present: 'P', absent: 'A', late: 'L', excused: 'E' };
+      const statusMap = { present: 'P', absent: 'A', late: 'L' };
       const status = statusMap[attMatch[2]];
       const student = findStudent(nameQuery, students);
       if (student) {
