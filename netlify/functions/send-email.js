@@ -26,12 +26,12 @@ exports.handler = async (event) => {
         from: 'Jennifer Jaramillo <jennifer@jointhereadingclub.com>',
         reply_to: 'dj.jaramillo99@gmail.com',
         to: parentEmail,
-        subject: `Summer Reading & Math Club — Next Steps ☀️📚➕`,
+        subject: `Summer Reading & Math Club — Next Steps`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #4CAF50, #81C784); padding: 28px; border-radius: 12px 12px 0 0; text-align: center;">
               <h1 style="color: white; margin: 0; font-size: 26px;">Summer Reading &amp; Math Club 2026</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">☀️ Building confident learners, one lesson at a time</p>
+              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">Building confident learners, one lesson at a time</p>
             </div>
             <div style="background: #ffffff; padding: 32px; border: 1px solid #e0e0e0; border-radius: 0 0 12px 12px;">
 
@@ -43,13 +43,13 @@ exports.handler = async (event) => {
 
               <div style="background: #FFF8E7; border-radius: 10px; padding: 20px; margin: 24px 0; border-left: 4px solid #F4D03F;">
                 <h3 style="color: #333; margin: 0 0 12px; font-size: 16px;">Assessment Details</h3>
-                <p style="color: #555; margin: 6px 0; font-size: 14px;">📍 <strong>Location:</strong> In-person, one-on-one</p>
-                <p style="color: #555; margin: 6px 0; font-size: 14px;">⏰ <strong>Duration:</strong> Approximately 20–30 minutes</p>
-                <p style="color: #555; margin: 6px 0; font-size: 14px;">💛 <strong>Cost:</strong> No cost — included as part of registration</p>
+                <p style="color: #555; margin: 6px 0; font-size: 14px;"><strong>Location:</strong> Flying Star — Wyoming and Paseo</p>
+                <p style="color: #555; margin: 6px 0; font-size: 14px;"><strong>Duration:</strong> Approximately 20-30 minutes</p>
+                <p style="color: #555; margin: 6px 0; font-size: 14px;"><strong>Cost:</strong> No cost — included as part of registration</p>
               </div>
 
               <div style="text-align: center; margin: 28px 0;">
-                <a href="${BOOKING_LINK}" style="background: #4CAF50; color: white; padding: 16px 36px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">📅 Schedule Your Assessment</a>
+                <a href="${BOOKING_LINK}" style="background: #4CAF50; color: white; padding: 16px 36px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">Schedule Your Assessment</a>
                 <p style="color: #888; font-size: 13px; margin-top: 10px;">Click the button to choose a date and time that works for you</p>
               </div>
 
@@ -69,9 +69,9 @@ exports.handler = async (event) => {
                     <p style="margin: 4px 0 0; color: #888; font-size: 13px;">M.Ed. | Level 3 Teacher | 20+ Years Experience</p>
                     <p style="margin: 4px 0 0; color: #888; font-size: 13px;">Summer Reading &amp; Math Club</p>
                     <p style="margin: 8px 0 0; font-size: 13px;">
-                      📞 <a href="tel:5053068309" style="color: #4CAF50; text-decoration: none;">(505) 306-8309</a><br />
-                      ✉️ <a href="mailto:dj.jaramillo99@gmail.com" style="color: #4CAF50; text-decoration: none;">dj.jaramillo99@gmail.com</a><br />
-                      🌐 <a href="https://jointhereadingclub.com" style="color: #4CAF50; text-decoration: none;">jointhereadingclub.com</a>
+                      <a href="tel:5053068309" style="color: #4CAF50; text-decoration: none;">(505) 306-8309</a><br />
+                      <a href="mailto:dj.jaramillo99@gmail.com" style="color: #4CAF50; text-decoration: none;">dj.jaramillo99@gmail.com</a><br />
+                      <a href="https://jointhereadingclub.com" style="color: #4CAF50; text-decoration: none;">jointhereadingclub.com</a>
                     </p>
                   </td>
                 </tr>
@@ -92,11 +92,11 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         from: 'Jennifer Jaramillo <jennifer@jointhereadingclub.com>',
         to: 'dj.jaramillo99@gmail.com',
-        subject: `🔔 New Registration: ${childName} (${grade}, ${club})`,
+        subject: `New Registration: ${childName} (${grade}, ${club})`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: #1E88E5; padding: 20px; border-radius: 12px 12px 0 0;">
-              <h2 style="color: white; margin: 0;">🔔 New Registration</h2>
+              <h2 style="color: white; margin: 0;">New Registration</h2>
             </div>
             <div style="background: #ffffff; padding: 24px; border: 1px solid #e0e0e0; border-radius: 0 0 12px 12px;">
               <table style="width: 100%; border-collapse: collapse;">
