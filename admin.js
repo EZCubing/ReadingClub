@@ -83,6 +83,12 @@
       document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'roster') renderRoster();
+      if (tab.dataset.tab === 'students') renderStudents();
+      if (tab.dataset.tab === 'attendance') renderAttendance();
+      if (tab.dataset.tab === 'payments') renderPayments();
+      if (tab.dataset.tab === 'overview') renderOverview();
+      if (tab.dataset.tab === 'cohorts') renderCohorts();
     });
   });
 
