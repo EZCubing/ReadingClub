@@ -573,7 +573,8 @@
   function getScheduleForDate() {
     const date = new Date(groupDateInput.value + 'T12:00:00');
     const day = date.getDay();
-    if (day === 1 || day === 3) return 'Mon/Wed';
+    if (day === 1) return 'Monday'; // Default Monday to Monday Only view
+    if (day === 3) return 'Mon/Wed';
     if (day === 2 || day === 4) return 'Tue/Thu';
     return '';
   }
@@ -619,7 +620,13 @@
     const teacherFilter = groupTeacherFilter.value;
 
     // Filter students by schedule
-    let dayStudents = placed.filter(s => s.student_group === schedFilter);
+    let dayStudents;
+    if (schedFilter === 'Monday') {
+      // Monday shows Monday-only AND Mon/Wed students
+      dayStudents = placed.filter(s => s.student_group === 'Monday' || s.student_group === 'Mon/Wed');
+    } else {
+      dayStudents = placed.filter(s => s.student_group === schedFilter);
+    }
 
     // Filter by teacher
     if (teacherFilter) dayStudents = dayStudents.filter(s => s.teacher === teacherFilter);

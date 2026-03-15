@@ -216,6 +216,7 @@
                   <label>Group</label>
                   <select id="sGroup">
                     <option value="">Select Group</option>
+                    <option value="Monday">Monday Only</option>
                     <option value="Mon/Wed">Monday / Wednesday</option>
                     <option value="Tue/Thu">Tuesday / Thursday</option>
                   </select>
@@ -277,6 +278,7 @@
           </select>
           <select id="rosterFilterGroup">
             <option value="">All Groups</option>
+            <option value="Monday">Monday Only</option>
             <option value="Mon/Wed">Mon / Wed</option>
             <option value="Tue/Thu">Tue / Thu</option>
           </select>
@@ -339,6 +341,7 @@
           <input type="date" id="groupDate" />
         </div>
         <div class="day-selector__days">
+          <button class="day-btn" data-schedule="Monday">Monday</button>
           <button class="day-btn" data-schedule="Mon/Wed">Mon / Wed</button>
           <button class="day-btn" data-schedule="Tue/Thu">Tue / Thu</button>
         </div>
