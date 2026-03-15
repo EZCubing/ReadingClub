@@ -198,21 +198,60 @@ a:hover { color: var(--clr-sun-warm); }
   padding: 120px 24px 200px;
 }
 
-.hero__brand {
+.hero__arch {
+  max-width: 600px;
+  margin: 0 auto -20px;
+}
+
+.arch-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 2px 6px rgba(255,255,255,0.6));
+}
+
+.hero__summer {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.hero__summer-text {
   font-family: var(--font-heading);
-  font-size: clamp(3rem, 7vw, 5rem);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 900;
+  color: #C8962E;
+  letter-spacing: 8px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.hero__summer-dates {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  color: var(--clr-text);
+  letter-spacing: 12px;
+  margin-bottom: 0;
+}
+
+.hero__summer-year {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: var(--clr-text);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.hero__summer-open {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
   font-weight: 900;
   color: var(--clr-green-dark);
-  line-height: 1.1;
-  margin-bottom: 12px;
-  text-shadow: 0 2px 8px rgba(255,255,255,0.6);
+  letter-spacing: 3px;
+  background: var(--clr-sun);
   display: inline-block;
-  position: relative;
-  transform: rotate(-2deg);
-  background: linear-gradient(180deg, var(--clr-green-dark) 0%, var(--clr-green) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  padding: 8px 28px;
+  border-radius: 4px;
 }
 
 .hero__headline {
