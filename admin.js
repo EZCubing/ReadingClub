@@ -943,8 +943,8 @@
         const paymentsDetail = studentPayments.map(p =>
           `<div style="font-size:0.78rem;color:var(--text-light);display:flex;align-items:center;gap:8px;">
             <span>${esc(p.date)} — $${parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
-            <button onclick="editPayment('${p.id}', ${parseFloat(p.amount)}, '${esc(p.method)}')" style="background:none;border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;padding:2px 8px;border-radius:4px;cursor:pointer;">Edit</button>
-            <button onclick="deletePayment('${p.id}')" style="background:none;border:1px solid var(--border);color:var(--text-light);font-size:0.68rem;padding:2px 8px;border-radius:4px;cursor:pointer;">Del</button>
+            <button onclick="editPayment('${p.id}', ${parseFloat(p.amount)}, '${esc(p.method)}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
+            <button onclick="deletePayment('${p.id}')" style="background:#FFEBEE;border:1px solid #FFCDD2;color:#e53935;font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
           </div>`
         ).join('');
 
