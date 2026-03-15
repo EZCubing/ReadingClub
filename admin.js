@@ -587,11 +587,23 @@
     const { error } = await supabase.from('attendance').insert(records);
     if (error) { alert('Error: ' + error.message); return; }
 
-    await addActivity(`Attendance saved: ${records.length} student(s) on ${date}`);
+    // Advance lesson by 1 for students marked Present
+    const presentStudents = records.filter(r => r.status === 'P');
+    for (const r of presentStudents) {
+      const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
+      if (student && student.lesson) {
+        const newLesson = Math.min(student.lesson + 1, 180);
+        await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
+      }
+    }
+
+    const advancedCount = presentStudents.length;
+    await addActivity(`Attendance saved: ${records.length} student(s) on ${date}${advancedCount > 0 ? ' — ' + advancedCount + ' lesson(s) advanced' : ''}`);
     delete groupAttSelections[groupId];
     await renderGroups();
+    await renderRoster();
     await renderOverview();
-    alert(`Attendance saved for ${records.length} student(s).`);
+    alert(`Attendance saved for ${records.length} student(s).${advancedCount > 0 ? ' ' + advancedCount + ' student(s) advanced to next lesson.' : ''}`);
   };
 
   // History
