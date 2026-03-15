@@ -311,6 +311,24 @@
           text: 'New registration: ' + childName + ' (' + grade + ', ' + club + ') — submitted by ' + parent
         });
 
+        // Send confirmation emails
+        try {
+          await fetch('/.netlify/functions/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              parentName: parent,
+              parentEmail: document.getElementById('rEmail').value.trim(),
+              childName: childName,
+              grade: grade,
+              club: club,
+            }),
+          });
+        } catch (e) {
+          // Email failure shouldn't block registration
+          console.error('Email send failed:', e);
+        }
+
         // Show success
         document.getElementById('formSection').style.display = 'none';
         document.getElementById('successSection').style.display = 'block';
