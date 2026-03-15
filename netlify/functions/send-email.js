@@ -20,7 +20,7 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Reading Club <noreply@jointhereadingclub.com>',
+        from: 'Jennifer Jaramillo <jennifer@jointhereadingclub.com>',
         to: parentEmail,
         subject: `Thank you for registering ${childName} for Reading Club!`,
         html: `
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Reading Club <noreply@jointhereadingclub.com>',
+        from: 'Jennifer Jaramillo <jennifer@jointhereadingclub.com>',
         to: 'dj.jaramillo99@gmail.com',
         subject: `New Registration: ${childName} (${grade}, ${club})`,
         html: `
