@@ -446,10 +446,12 @@
   // ===== ATTENDANCE =====
   async function renderAttendance() {
     const students = await getStudents();
+    const placed = students.filter(s => s.status === 'Placed' || !s.status);
     const clubFilter = document.getElementById('attendanceClub').value;
-    const filtered = clubFilter ? students.filter(s => s.club && s.club.includes(clubFilter)) : students;
+    const filtered = clubFilter ? placed.filter(s => s.club && s.club.includes(clubFilter)) : placed;
     const body = document.getElementById('attendanceBody');
     const empty = document.getElementById('attendanceEmpty');
+    const date = document.getElementById('attendanceDate').value;
 
     if (filtered.length === 0) {
       body.innerHTML = '';
@@ -458,23 +460,37 @@
     }
     empty.style.display = 'none';
 
-    body.innerHTML = filtered.map(s => `
-      <tr>
+    // Load existing attendance for this date so we can pre-select
+    const allAtt = await getAttendance();
+    const todayAtt = {};
+    allAtt.filter(a => a.date === date).forEach(a => { todayAtt[a.student_id] = a.status; });
+
+    body.innerHTML = filtered.map(s => {
+      const existing = todayAtt[s.id] || null;
+      return `<tr>
         <td><strong>${esc(s.name)}</strong></td>
         <td>${esc(s.club)}</td>
         <td>
           <div class="att-status">
-            <button class="att-btn" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setAtt(this)">Present</button>
-            <button class="att-btn" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setAtt(this)">Absent</button>
-            <button class="att-btn" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setAtt(this)">Late</button>
-            <button class="att-btn" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="E" onclick="setAtt(this)">Excused</button>
+            <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setAtt(this)">Present</button>
+            <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setAtt(this)">Absent</button>
+            <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setAtt(this)">Late</button>
+            <button class="att-btn ${existing === 'E' ? 'selected-E' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="E" onclick="setAtt(this)">Excused</button>
           </div>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
+
+    // Pre-load existing selections into attSelections
+    filtered.forEach(s => {
+      if (todayAtt[s.id]) {
+        attSelections[s.id] = { status: todayAtt[s.id], name: s.name, club: s.club };
+      }
+    });
   }
 
   document.getElementById('attendanceClub').addEventListener('change', () => renderAttendance());
+  document.getElementById('attendanceDate').addEventListener('change', () => renderAttendance());
 
   const attSelections = {};
 
@@ -538,9 +554,35 @@
         <td>${esc(r.student_name)}</td>
         <td>${esc(r.club)}</td>
         <td><span class="att-btn selected-${r.status}" style="cursor:default">${statusLabels[r.status] || r.status}</span></td>
+        <td class="actions">
+          <button onclick="changeAttStatus('${r.id}', 'P')">P</button>
+          <button onclick="changeAttStatus('${r.id}', 'A')">A</button>
+          <button onclick="changeAttStatus('${r.id}', 'L')">L</button>
+          <button class="del" onclick="deleteAttRecord('${r.id}')">Del</button>
+        </td>
       </tr>
     `).join('');
   }
+
+  window.changeAttStatus = async function(id, newStatus) {
+    const statusLabels = { P: 'Present', A: 'Absent', L: 'Late', E: 'Excused' };
+    const { error } = await supabase.from('attendance').update({ status: newStatus }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity(`Changed attendance to ${statusLabels[newStatus]}`);
+    await renderHistory();
+    await renderAttendance();
+    await renderOverview();
+  };
+
+  window.deleteAttRecord = async function(id) {
+    if (!confirm('Delete this attendance record?')) return;
+    const { error } = await supabase.from('attendance').delete().eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity('Deleted an attendance record');
+    await renderHistory();
+    await renderAttendance();
+    await renderOverview();
+  };
 
   // ===== PAYMENTS =====
   const paymentModal = document.getElementById('paymentModal');
