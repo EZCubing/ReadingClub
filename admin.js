@@ -398,10 +398,10 @@
     if (groupFilter) filtered = filtered.filter(s => s.student_group === groupFilter);
     if (timeFilter) filtered = filtered.filter(s => s.time_slot === timeFilter);
 
-    // KPIs
-    document.getElementById('rosterTotal').textContent = placed.length;
-    document.getElementById('rosterMonWed').textContent = placed.filter(s => s.student_group === 'Mon/Wed').length;
-    document.getElementById('rosterTueThu').textContent = placed.filter(s => s.student_group === 'Tue/Thu').length;
+    // KPIs reflect the filtered set
+    document.getElementById('rosterTotal').textContent = filtered.length;
+    document.getElementById('rosterMonWed').textContent = filtered.filter(s => s.student_group === 'Mon/Wed').length;
+    document.getElementById('rosterTueThu').textContent = filtered.filter(s => s.student_group === 'Tue/Thu').length;
 
     const body = document.getElementById('rosterBody');
     const empty = document.getElementById('rosterEmpty');
