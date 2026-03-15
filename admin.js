@@ -287,6 +287,7 @@
     document.getElementById('studentModalTitle').textContent = 'Add Current Student';
     studentForm.reset();
     document.getElementById('studentId').value = '';
+    document.getElementById('studentDeleteBtn').style.display = 'none';
     statusSelect.value = 'Placed';
     updateFormSections();
     studentModal.style.display = 'flex';
@@ -297,6 +298,7 @@
     document.getElementById('studentModalTitle').textContent = 'New Student';
     studentForm.reset();
     document.getElementById('studentId').value = '';
+    document.getElementById('studentDeleteBtn').style.display = 'none';
     statusSelect.value = 'Survey Submitted';
     updateFormSections();
     studentModal.style.display = 'flex';
@@ -465,9 +467,24 @@
     document.getElementById('sLevel').value = s.level || '';
     document.getElementById('sLesson').value = s.lesson || '';
     document.getElementById('sNotes').value = s.notes || '';
+    document.getElementById('studentDeleteBtn').style.display = 'inline-flex';
     updateFormSections();
     studentModal.style.display = 'flex';
   };
+
+  document.getElementById('studentDeleteBtn').addEventListener('click', async () => {
+    const id = document.getElementById('studentId').value;
+    if (!id) return;
+    const students = await getStudents();
+    const s = students.find(x => x.id === id);
+    if (!s) return;
+    if (!confirm(`Are you sure you want to delete ${s.name}? This will remove all their attendance, payment, and missed lesson records. This cannot be undone.`)) return;
+    const { error } = await supabase.from('students').delete().eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity(`Deleted student: ${s.name}`);
+    studentModal.style.display = 'none';
+    await refreshAll();
+  });
 
   window.deleteStudent = async function(id) {
     const students = await getStudents();
