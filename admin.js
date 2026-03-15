@@ -508,11 +508,12 @@
 
     if (groupKeys.length === 0) {
       container.innerHTML = '';
-      empty.style.display = 'block';
       empty.textContent = placed.length === 0 ? 'No current students. Add students first.' : 'No students on ' + (schedFilter || 'this schedule') + '.';
+      empty.style.display = 'block';
       return;
     }
     empty.style.display = 'none';
+    container.style.display = '';
 
     // Build attendance lookup for this date
     const todayAtt = {};
