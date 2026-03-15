@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
     // CALENDAR BOOKING LINK — Replace this with your Cal.com link once set up
-    const BOOKING_LINK = 'https://cal.com/readingclub/assessment';
+    const BOOKING_LINK = 'https://cal.com/jennifer-jaramillo';
 
     // Email to the parent
     await fetch('https://api.resend.com/emails', {
