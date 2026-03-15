@@ -120,7 +120,8 @@
     showLoggedInUser();
     applyRolePermissions();
     startSecurityListeners();
-    initDashboard();
+    // Wait for DOM to be fully ready then load data
+    setTimeout(() => initDashboard(), 100);
   } else {
     sessionStorage.removeItem('rc_auth');
     loginScreen.style.display = 'flex';
@@ -216,6 +217,7 @@
 
   // ===== OVERVIEW =====
   async function renderOverview() {
+    try {
     const [students, payments, attendance, activity] = await Promise.all([
       getStudents(), getPayments(), getAttendance(), getActivity()
     ]);
@@ -246,6 +248,7 @@
         return `<div class="activity-item"><span class="activity-item__time">${timeStr}</span><span>${esc(a.text)}</span></div>`;
       }).join('');
     }
+    } catch (err) { console.error('Overview render error:', err); }
   }
 
   // ===== STUDENTS =====
