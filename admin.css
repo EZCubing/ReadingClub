@@ -1253,9 +1253,20 @@ body {
 
 /* Student Cards */
 .student-cards {
+  display: block;
+}
+
+.student-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 16px;
+}
+
+.pipeline-section-title {
+  font-family: var(--font-h);
+  font-size: 1.1rem;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
 }
 
 .student-card {

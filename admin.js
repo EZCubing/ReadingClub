@@ -379,11 +379,15 @@
     empty.style.display = 'none';
     container.style.display = '';
 
-    container.innerHTML = filtered.map(s => {
+    const RM_COLORS = { 'K': '#E91E8A', '1': '#1E88E5', '2': '#7B1FA2', '3': '#E65100', '4': '#00897B', '5': '#C62828' };
+
+    function renderCard(s) {
       const stage = s.status || 'Survey Submitted';
       const stageClass = STAGE_CLASS[stage] || 'survey';
       const stageStg = STAGE_STG[stage] || 'stg-survey';
       const nextStage = NEXT_STAGE[stage];
+      const rmColor = s.level ? (RM_COLORS[s.level] || '#555') : '';
+      const rmBadge = s.level ? `<span style="background:${rmColor};color:white;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;">RM ${esc(s.level)}</span>` : '';
 
       let detailsHtml = `
         <span class="student-card__detail"><strong>Grade:</strong> ${esc(s.grade) || '—'}</span>
@@ -398,7 +402,7 @@
           <span><strong>Teacher:</strong> ${esc(s.teacher)}</span>
           <span><strong>Group:</strong> ${esc(s.student_group)}</span>
           <span><strong>Time:</strong> ${esc(s.time_slot)}</span>
-          <span><strong>RM Level:</strong> ${s.level ? 'RM ' + esc(s.level) : '—'}</span>
+          <span>${rmBadge}</span>
           <span><strong>Lesson:</strong> ${s.lesson || '—'}</span>
         </div>`;
       }
@@ -413,7 +417,7 @@
       return `
         <div class="student-card stage-${stageClass}">
           <div class="student-card__header">
-            <div class="student-card__name">${esc(s.name)}</div>
+            <div class="student-card__name">${esc(s.name)} ${rmBadge}</div>
             <span class="student-card__stage ${stageStg}">${stage}</span>
           </div>
           <div class="student-card__details">
@@ -428,7 +432,37 @@
           </div>
         </div>
       `;
-    }).join('');
+    }
+
+    // Split into Placed and Unplaced
+    const placed = filtered.filter(s => s.status === 'Placed');
+    const unplaced = filtered.filter(s => s.status !== 'Placed');
+
+    let html = '';
+
+    if (currentPipelineFilter === 'all' || currentPipelineFilter === 'Placed') {
+      if (unplaced.length > 0 && (currentPipelineFilter === 'all')) {
+        html += `<h3 class="pipeline-section-title" style="color:var(--red);margin:16px 0 12px;">Unplaced (${unplaced.length})</h3>`;
+        html += `<div class="student-cards-grid">${unplaced.map(renderCard).join('')}</div>`;
+      }
+      if (placed.length > 0 && (currentPipelineFilter === 'all')) {
+        html += `<h3 class="pipeline-section-title" style="color:var(--green-dark);margin:24px 0 12px;">Placed (${placed.length})</h3>`;
+        html += `<div class="student-cards-grid">${placed.map(renderCard).join('')}</div>`;
+      }
+      if (currentPipelineFilter === 'Placed') {
+        html += `<div class="student-cards-grid">${placed.map(renderCard).join('')}</div>`;
+      }
+    }
+
+    if (currentPipelineFilter !== 'all' && currentPipelineFilter !== 'Placed') {
+      html += `<div class="student-cards-grid">${filtered.map(renderCard).join('')}</div>`;
+    }
+
+    if (currentPipelineFilter === 'all' && placed.length === 0 && unplaced.length === 0) {
+      html = '';
+    }
+
+    container.innerHTML = html;
   }
 
   window.advanceStudent = async function(id, nextStage) {
@@ -544,23 +578,27 @@
       return a.name.localeCompare(b.name);
     });
 
-    body.innerHTML = filtered.map(s => `
-      <tr>
+    const RM_COLORS = { 'K': '#E91E8A', '1': '#1E88E5', '2': '#7B1FA2', '3': '#E65100', '4': '#00897B', '5': '#C62828' };
+
+    body.innerHTML = filtered.map(s => {
+      const rmColor = s.level ? (RM_COLORS[s.level] || '#555') : '';
+      const rmBadge = s.level ? `<span style="background:${rmColor};color:white;padding:3px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;">RM ${esc(s.level)}</span>` : '—';
+      return `<tr>
         <td><strong>${esc(s.name)}</strong></td>
         <td>${esc(s.grade)}</td>
         <td>${esc(s.teacher)}</td>
         <td>${esc(s.student_group)}</td>
         <td>${esc(s.time_slot)}</td>
         <td>${esc(s.club)}</td>
-        <td>${s.level ? 'RM ' + esc(s.level) : '—'}</td>
+        <td>${rmBadge}</td>
         <td>${s.lesson || '—'}</td>
         <td>${esc(s.parent)}</td>
         <td>${esc(s.phone)}</td>
         <td class="actions">
           <button onclick="editStudent('${s.id}')">Edit</button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
   // ===== GROUPS & ATTENDANCE =====
