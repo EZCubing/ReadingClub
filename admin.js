@@ -85,18 +85,18 @@
       document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
       if (tab.dataset.tab === 'roster') renderRoster();
       if (tab.dataset.tab === 'students') renderStudents();
-      if (tab.dataset.tab === 'attendance') renderAttendance();
+      if (tab.dataset.tab === 'groups') renderGroups();
       if (tab.dataset.tab === 'payments') renderPayments();
       if (tab.dataset.tab === 'overview') renderOverview();
-      if (tab.dataset.tab === 'cohorts') renderCohorts();
     });
   });
 
   // ===== DASHBOARD INIT =====
   async function initDashboard() {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('attendanceDate').value = today;
+    document.getElementById('groupDate').value = today;
     billingMonthInput.value = getCurrentMonth();
+    updateDayButtons();
     await refreshAll();
   }
 
@@ -104,11 +104,10 @@
     await Promise.all([
       renderStudents(),
       renderRoster(),
-      renderAttendance(),
+      renderGroups(),
       renderPayments(),
       renderOverview(),
       renderHistory(),
-      renderCohorts(),
     ]);
   }
 
@@ -443,97 +442,323 @@
     `).join('');
   }
 
-  // ===== ATTENDANCE =====
-  async function renderAttendance() {
-    const students = await getStudents();
-    const placed = students.filter(s => s.status === 'Placed' || !s.status);
-    const clubFilter = document.getElementById('attendanceClub').value;
-    const filtered = clubFilter ? placed.filter(s => s.club && s.club.includes(clubFilter)) : placed;
-    const body = document.getElementById('attendanceBody');
-    const empty = document.getElementById('attendanceEmpty');
-    const date = document.getElementById('attendanceDate').value;
+  // ===== GROUPS & ATTENDANCE =====
+  const groupDateInput = document.getElementById('groupDate');
+  const groupScheduleFilter = document.getElementById('groupScheduleFilter');
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const DAY_TO_SCHEDULE = { Monday: 'Mon/Wed', Tuesday: 'Tue/Thu', Wednesday: 'Mon/Wed', Thursday: 'Tue/Thu' };
+
+  function getSelectedDay() {
+    const date = new Date(groupDateInput.value + 'T12:00:00');
+    return DAYS[date.getDay()];
+  }
+
+  function updateDayButtons() {
+    const selectedDay = getSelectedDay();
+    document.querySelectorAll('.day-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.day === selectedDay);
+    });
+  }
+
+  groupDateInput.addEventListener('change', () => { updateDayButtons(); renderGroups(); });
+  groupScheduleFilter.addEventListener('change', () => renderGroups());
+
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Find next occurrence of this day from current date
+      const target = DAYS.indexOf(btn.dataset.day);
+      const current = new Date(groupDateInput.value + 'T12:00:00');
+      const currentDay = current.getDay();
+      let diff = target - currentDay;
+      if (diff < 0) diff += 7;
+      if (diff === 0) diff = 0;
+      const newDate = new Date(current);
+      newDate.setDate(newDate.getDate() + diff);
+      groupDateInput.value = newDate.toISOString().split('T')[0];
+      updateDayButtons();
+      renderGroups();
+    });
+  });
+
+  // Group modal
+  const groupModal = document.getElementById('groupModal');
+  const groupForm = document.getElementById('groupForm');
+
+  document.getElementById('addGroupBtn').addEventListener('click', () => {
+    document.getElementById('groupModalTitle').textContent = 'New Group';
+    groupForm.reset();
+    document.getElementById('gId').value = '';
+    // Default schedule based on current day
+    const day = getSelectedDay();
+    const sched = DAY_TO_SCHEDULE[day] || 'Mon/Wed';
+    document.getElementById('gSchedule').value = sched;
+    groupModal.style.display = 'flex';
+  });
+
+  document.getElementById('groupModalClose').addEventListener('click', () => groupModal.style.display = 'none');
+  document.getElementById('groupCancelBtn').addEventListener('click', () => groupModal.style.display = 'none');
+  groupModal.addEventListener('click', (e) => { if (e.target === groupModal) groupModal.style.display = 'none'; });
+
+  groupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('gId').value;
+    const group = {
+      name: document.getElementById('gName').value,
+      teacher: document.getElementById('gTeacher').value,
+      schedule: document.getElementById('gSchedule').value,
+      time_slot: document.getElementById('gTime').value,
+      club: document.getElementById('gClub').value,
+      max_students: parseInt(document.getElementById('gMax').value) || 10,
+      status: 'Active',
+    };
+
+    if (id) {
+      const { error } = await supabase.from('cohorts').update(group).eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      await addActivity(`Updated group: ${group.name}`);
+    } else {
+      const { error } = await supabase.from('cohorts').insert(group);
+      if (error) { alert('Error: ' + error.message); return; }
+      await addActivity(`Created group: ${group.name} (${group.teacher}, ${group.schedule})`);
+    }
+    groupModal.style.display = 'none';
+    await refreshAll();
+  });
+
+  async function renderGroups() {
+    const [cohorts, allStudents, allAtt] = await Promise.all([getCohorts(), getStudents(), getAttendance()]);
+    const container = document.getElementById('groupCards');
+    const empty = document.getElementById('groupsEmpty');
+    const date = groupDateInput.value;
+    const day = getSelectedDay();
+    const scheduleForDay = DAY_TO_SCHEDULE[day];
+    const schedFilter = groupScheduleFilter.value;
+
+    // Filter groups that meet on this day
+    let filtered = cohorts.filter(c => {
+      if (c.schedule === 'Mon/Wed' && (day === 'Monday' || day === 'Wednesday')) return true;
+      if (c.schedule === 'Tue/Thu' && (day === 'Tuesday' || day === 'Thursday')) return true;
+      return false;
+    });
+
+    if (schedFilter) {
+      filtered = filtered.filter(c => c.schedule === schedFilter);
+    }
+
+    // Day info
+    const dayInfo = document.getElementById('dayInfo');
+    const dateLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    dayInfo.innerHTML = `<strong>${dateLabel}</strong> — ${filtered.length} group(s) meeting ${scheduleForDay ? '(' + scheduleForDay + ')' : ''}`;
 
     if (filtered.length === 0) {
-      body.innerHTML = '';
+      container.innerHTML = '';
       empty.style.display = 'block';
+      empty.textContent = cohorts.length === 0 ? 'No groups yet. Click "+ New Group" to create one.' : 'No groups meeting on ' + day + '.';
       return;
     }
     empty.style.display = 'none';
 
-    // Load existing attendance for this date so we can pre-select
-    const allAtt = await getAttendance();
+    // Build attendance lookup for this date
     const todayAtt = {};
     allAtt.filter(a => a.date === date).forEach(a => { todayAtt[a.student_id] = a.status; });
 
-    body.innerHTML = filtered.map(s => {
-      const existing = todayAtt[s.id] || null;
-      return `<tr>
-        <td><strong>${esc(s.name)}</strong></td>
-        <td>${esc(s.club)}</td>
-        <td>
-          <div class="att-status">
-            <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setAtt(this)">Present</button>
-            <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setAtt(this)">Absent</button>
-            <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setAtt(this)">Late</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
+    let html = '';
+    for (const g of filtered) {
+      const cs = await getCohortStudents(g.id);
+      const maxStudents = g.max_students || 10;
 
-    // Pre-load existing selections into attSelections
-    filtered.forEach(s => {
-      if (todayAtt[s.id]) {
-        attSelections[s.id] = { status: todayAtt[s.id], name: s.name, club: s.club };
-      }
-    });
+      const studentsHtml = cs.length > 0 ? cs.map(s => {
+        const name = s.students ? s.students.name : 'Unknown';
+        const sid = s.student_id;
+        const existing = todayAtt[sid] || null;
+        return `<tr>
+          <td><strong>${esc(name)}</strong></td>
+          <td>
+            <div class="att-status">
+              <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${g.id}" data-student="${sid}" data-name="${esc(name)}" data-status="P" onclick="setGroupAtt(this)">Present</button>
+              <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${g.id}" data-student="${sid}" data-name="${esc(name)}" data-status="A" onclick="setGroupAtt(this)">Absent</button>
+              <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-group="${g.id}" data-student="${sid}" data-name="${esc(name)}" data-status="L" onclick="setGroupAtt(this)">Late</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('') : '';
+
+      html += `
+        <div class="group-card">
+          <div class="group-card__header">
+            <div>
+              <div class="group-card__title">${esc(g.name)}</div>
+              <div class="group-card__meta">
+                <span>${esc(g.teacher)}</span>
+                <span>${esc(g.schedule)}</span>
+                <span>${esc(g.time_slot)}</span>
+                <span>${esc(g.club)}</span>
+                <span>${cs.length}/${maxStudents} students</span>
+              </div>
+            </div>
+            <div class="group-card__actions-top">
+              <button onclick="assignGroupStudents('${g.id}', ${maxStudents}, '${g.schedule}')">Assign Students</button>
+              <button onclick="editGroup('${g.id}')">Edit</button>
+              <button class="del" onclick="deleteGroup('${g.id}')">Delete</button>
+            </div>
+          </div>
+          <div class="group-card__body">
+            ${cs.length > 0 ? `
+              <table class="group-card__attendance">
+                <thead><tr><th>Student</th><th>Attendance</th></tr></thead>
+                <tbody>${studentsHtml}</tbody>
+              </table>
+            ` : '<p class="no-students-msg">No students assigned yet. Click "Assign Students" to add them.</p>'}
+          </div>
+          ${cs.length > 0 ? `
+            <div class="group-card__footer">
+              <button class="save-att-btn" onclick="saveGroupAttendance('${g.id}')">Save Attendance</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+    container.innerHTML = html;
   }
 
-  document.getElementById('attendanceClub').addEventListener('change', () => renderAttendance());
-  document.getElementById('attendanceDate').addEventListener('change', () => renderAttendance());
+  // Track attendance selections per group
+  const groupAttSelections = {};
 
-  const attSelections = {};
-
-  window.setAtt = function(btn) {
+  window.setGroupAtt = function(btn) {
+    const groupId = btn.dataset.group;
     const studentId = btn.dataset.student;
     const status = btn.dataset.status;
-    attSelections[studentId] = {
-      status,
-      name: btn.dataset.name,
-      club: btn.dataset.club
-    };
+    if (!groupAttSelections[groupId]) groupAttSelections[groupId] = {};
+    groupAttSelections[groupId][studentId] = { status, name: btn.dataset.name };
     btn.parentElement.querySelectorAll('.att-btn').forEach(b => b.className = 'att-btn');
     btn.classList.add('selected-' + status);
   };
 
-  document.getElementById('saveAttendanceBtn').addEventListener('click', async () => {
-    const date = document.getElementById('attendanceDate').value;
+  window.saveGroupAttendance = async function(groupId) {
+    const date = groupDateInput.value;
     if (!date) return alert('Please select a date.');
+    const selections = groupAttSelections[groupId];
+    if (!selections || Object.keys(selections).length === 0) return alert('Please mark attendance for at least one student.');
 
-    const entries = Object.entries(attSelections);
-    if (entries.length === 0) return alert('Please mark attendance for at least one student.');
-
-    const records = entries.map(([studentId, info]) => ({
-      date,
-      student_id: studentId,
-      student_name: info.name,
-      club: info.club,
-      status: info.status,
+    const cohorts = await getCohorts();
+    const group = cohorts.find(c => c.id === groupId);
+    const records = Object.entries(selections).map(([studentId, info]) => ({
+      date, student_id: studentId, student_name: info.name, club: group ? group.club : '', status: info.status,
     }));
 
-    // Upsert: delete existing records for this date/students, then insert
     for (const r of records) {
       await supabase.from('attendance').delete().eq('date', date).eq('student_id', r.student_id);
     }
-
     const { error } = await supabase.from('attendance').insert(records);
-    if (error) { alert('Error saving attendance: ' + error.message); return; }
+    if (error) { alert('Error: ' + error.message); return; }
 
-    await addActivity(`Recorded attendance for ${records.length} student(s) on ${date}`);
-    Object.keys(attSelections).forEach(k => delete attSelections[k]);
-    await refreshAll();
+    await addActivity(`Attendance for ${group ? group.name : 'group'}: ${records.length} student(s) on ${date}`);
+    delete groupAttSelections[groupId];
+    await renderGroups();
+    await renderOverview();
     alert(`Attendance saved for ${records.length} student(s).`);
+  };
+
+  // Assign students modal
+  const assignModal = document.getElementById('assignModal');
+  let currentAssignGroupId = null;
+  let currentAssignMax = 10;
+
+  window.assignGroupStudents = async function(groupId, maxStudents, schedule) {
+    currentAssignGroupId = groupId;
+    currentAssignMax = maxStudents || 10;
+    const cohorts = await getCohorts();
+    const group = cohorts.find(c => c.id === groupId);
+    document.getElementById('assignModalTitle').textContent = `Assign Students to ${group ? group.name : 'Group'}`;
+
+    const allStudents = await getStudents();
+    // Only show students on the matching schedule
+    const matchingStudents = allStudents.filter(s => (s.status === 'Placed' || !s.status) && s.student_group === schedule);
+    const assigned = await getCohortStudents(groupId);
+    const assignedIds = new Set(assigned.map(a => a.student_id));
+
+    const listEl = document.getElementById('assignStudentList');
+    if (matchingStudents.length === 0) {
+      listEl.innerHTML = '<p class="empty-state">No students on the ' + schedule + ' schedule. Add students to this schedule first.</p>';
+    } else {
+      listEl.innerHTML = matchingStudents.map(s => `
+        <label class="assign-item">
+          <input type="checkbox" value="${s.id}" ${assignedIds.has(s.id) ? 'checked' : ''} onchange="updateAssignCounter()" />
+          <span><strong>${esc(s.name)}</strong> — ${esc(s.teacher || '')} ${s.grade ? '(Grade ' + esc(s.grade) + ')' : ''}</span>
+        </label>
+      `).join('');
+    }
+    updateAssignCounter();
+    assignModal.style.display = 'flex';
+  };
+
+  window.updateAssignCounter = function() {
+    const checkboxes = document.querySelectorAll('#assignStudentList input[type="checkbox"]');
+    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const counter = document.getElementById('assignCounter');
+    counter.textContent = `${checked} / ${currentAssignMax} spots filled`;
+    counter.classList.toggle('full', checked >= currentAssignMax);
+    checkboxes.forEach(cb => {
+      if (!cb.checked && checked >= currentAssignMax) {
+        cb.disabled = true;
+        cb.closest('.assign-item').style.opacity = '0.4';
+      } else {
+        cb.disabled = false;
+        cb.closest('.assign-item').style.opacity = '1';
+      }
+    });
+  };
+
+  document.getElementById('assignModalClose').addEventListener('click', () => assignModal.style.display = 'none');
+  document.getElementById('assignCancelBtn').addEventListener('click', () => assignModal.style.display = 'none');
+  assignModal.addEventListener('click', (e) => { if (e.target === assignModal) assignModal.style.display = 'none'; });
+
+  document.getElementById('assignSaveBtn').addEventListener('click', async () => {
+    if (!currentAssignGroupId) return;
+    const checkboxes = document.querySelectorAll('#assignStudentList input[type="checkbox"]');
+    const selectedIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+
+    if (selectedIds.length > currentAssignMax) {
+      alert(`Max ${currentAssignMax} students. Please uncheck some.`);
+      return;
+    }
+
+    await supabase.from('cohort_students').delete().eq('cohort_id', currentAssignGroupId);
+    if (selectedIds.length > 0) {
+      const rows = selectedIds.map(sid => ({ cohort_id: currentAssignGroupId, student_id: sid }));
+      const { error } = await supabase.from('cohort_students').insert(rows);
+      if (error) { alert('Error: ' + error.message); return; }
+    }
+
+    await addActivity(`Updated group assignments (${selectedIds.length} students)`);
+    assignModal.style.display = 'none';
+    await renderGroups();
   });
 
+  window.editGroup = async function(id) {
+    const cohorts = await getCohorts();
+    const g = cohorts.find(x => x.id === id);
+    if (!g) return;
+    document.getElementById('groupModalTitle').textContent = 'Edit Group';
+    document.getElementById('gId').value = g.id;
+    document.getElementById('gName').value = g.name || '';
+    document.getElementById('gTeacher').value = g.teacher || '';
+    document.getElementById('gSchedule').value = g.schedule || 'Mon/Wed';
+    document.getElementById('gTime').value = g.time_slot || '2:15-3:15 PM';
+    document.getElementById('gClub').value = g.club || 'Reading';
+    document.getElementById('gMax').value = g.max_students || 10;
+    groupModal.style.display = 'flex';
+  };
+
+  window.deleteGroup = async function(id) {
+    if (!confirm('Delete this group and all assignments?')) return;
+    const { error } = await supabase.from('cohorts').delete().eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity('Deleted a group');
+    await renderGroups();
+  };
+
+  // History
   async function renderHistory() {
     const records = await getAttendance();
     const body = document.getElementById('historyBody');
@@ -552,6 +777,7 @@
         <td>${esc(r.date)}</td>
         <td>${esc(r.student_name)}</td>
         <td>${esc(r.club)}</td>
+        <td></td>
         <td><span class="att-btn selected-${r.status}" style="cursor:default">${statusLabels[r.status] || r.status}</span></td>
         <td class="actions">
           <button onclick="changeAttStatus('${r.id}', 'P')">P</button>
@@ -569,7 +795,7 @@
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity(`Changed attendance to ${statusLabels[newStatus]}`);
     await renderHistory();
-    await renderAttendance();
+    await renderGroups();
     await renderOverview();
   };
 
@@ -579,7 +805,7 @@
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity('Deleted an attendance record');
     await renderHistory();
-    await renderAttendance();
+    await renderGroups();
     await renderOverview();
   };
 
@@ -774,230 +1000,6 @@
 
 
 
-  // ===== COHORTS =====
-  const cohortModal = document.getElementById('cohortModal');
-  const cohortForm = document.getElementById('cohortForm');
-  const assignModal = document.getElementById('assignModal');
-  let currentAssignCohortId = null;
-  let currentAssignMax = 10;
-
-  async function getCohorts() {
-    const { data, error } = await supabase.from('cohorts').select('*').order('month', { ascending: false });
-    if (error) { console.error('Error fetching cohorts:', error); return []; }
-    return data || [];
-  }
-
-  async function getCohortStudents(cohortId) {
-    const { data, error } = await supabase.from('cohort_students').select('*, students(name)').eq('cohort_id', cohortId);
-    if (error) { console.error('Error fetching cohort students:', error); return []; }
-    return data || [];
-  }
-
-  document.getElementById('addCohortBtn').addEventListener('click', () => {
-    document.getElementById('cohortModalTitle').textContent = 'New Group';
-    cohortForm.reset();
-    document.getElementById('cohortId').value = '';
-    document.getElementById('cMaxStudents').value = '10';
-    const now = new Date();
-    document.getElementById('cMonth').value = now.toISOString().slice(0, 7);
-    cohortModal.style.display = 'flex';
-  });
-
-  document.getElementById('cohortModalClose').addEventListener('click', () => cohortModal.style.display = 'none');
-  document.getElementById('cohortCancelBtn').addEventListener('click', () => cohortModal.style.display = 'none');
-  cohortModal.addEventListener('click', (e) => { if (e.target === cohortModal) cohortModal.style.display = 'none'; });
-
-  cohortForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('cohortId').value;
-    const cohort = {
-      name: document.getElementById('cName').value,
-      teacher: document.getElementById('cTeacher').value,
-      club: document.getElementById('cClub').value,
-      month: document.getElementById('cMonth').value,
-      max_students: parseInt(document.getElementById('cMaxStudents').value) || 10,
-      schedule: document.getElementById('cSchedule').value,
-      time_slot: document.getElementById('cTimeSlot').value,
-      status: document.getElementById('cStatus').value,
-      notes: document.getElementById('cNotes').value,
-    };
-
-    if (id) {
-      const { error } = await supabase.from('cohorts').update(cohort).eq('id', id);
-      if (error) { alert('Error updating cohort: ' + error.message); return; }
-      await addActivity(`Updated group: ${cohort.name} (Teacher: ${cohort.teacher})`);
-    } else {
-      const { error } = await supabase.from('cohorts').insert(cohort);
-      if (error) { alert('Error creating cohort: ' + error.message); return; }
-      await addActivity(`Created group: ${cohort.name} (Teacher: ${cohort.teacher})`);
-    }
-
-    cohortModal.style.display = 'none';
-    await refreshAll();
-  });
-
-  async function renderCohorts() {
-    const cohorts = await getCohorts();
-    const listEl = document.getElementById('cohortList');
-    const empty = document.getElementById('cohortsEmpty');
-
-    if (cohorts.length === 0) {
-      listEl.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
-    empty.style.display = 'none';
-
-    let html = '';
-    for (const c of cohorts) {
-      const cs = await getCohortStudents(c.id);
-      const maxStudents = c.max_students || 10;
-      const isFull = cs.length >= maxStudents;
-      const spotsLeft = maxStudents - cs.length;
-
-      const studentTags = cs.map(s => {
-        const name = s.students ? s.students.name : 'Unknown';
-        return `<span class="cohort-student-tag">${esc(name)}</span>`;
-      }).join('');
-
-      const monthLabel = c.month ? new Date(c.month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
-
-      html += `
-        <div class="cohort-card status-${c.status}">
-          <div class="cohort-card__header">
-            <div class="cohort-card__title">${esc(c.name)}</div>
-            <span class="cohort-card__badge badge-${c.status}">${c.status}</span>
-          </div>
-          <div class="cohort-card__teacher">Teacher: ${esc(c.teacher || 'Not assigned')}</div>
-          <div class="cohort-card__meta">
-            <span>${esc(c.club)}</span>
-            <span>${monthLabel}</span>
-            <span>${esc(c.schedule || 'Mon-Thu')}</span>
-            <span>${esc(c.time_slot || '')}</span>
-          </div>
-          <div style="margin-bottom:12px;">
-            <span class="cohort-card__spots ${isFull ? 'full' : ''}">${cs.length} / ${maxStudents} students${isFull ? ' — FULL' : ` — ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}</span>
-          </div>
-          ${c.notes ? `<div class="cohort-card__notes">${esc(c.notes)}</div>` : ''}
-          <div class="cohort-card__students">
-            <h4>Students</h4>
-            <div class="cohort-student-list">
-              ${studentTags || '<span style="color:var(--text-light);font-size:0.82rem;">No students assigned yet.</span>'}
-            </div>
-          </div>
-          <div class="cohort-card__actions">
-            <button onclick="assignStudents('${c.id}', ${maxStudents})">Assign Students</button>
-            <button onclick="editCohort('${c.id}')">Edit</button>
-            <button class="del" onclick="deleteCohort('${c.id}')">Delete</button>
-          </div>
-        </div>
-      `;
-    }
-
-    listEl.innerHTML = html;
-  }
-
-  window.editCohort = async function(id) {
-    const cohorts = await getCohorts();
-    const c = cohorts.find(x => x.id === id);
-    if (!c) return;
-    document.getElementById('cohortModalTitle').textContent = 'Edit Group';
-    document.getElementById('cohortId').value = c.id;
-    document.getElementById('cName').value = c.name || '';
-    document.getElementById('cTeacher').value = c.teacher || '';
-    document.getElementById('cClub').value = c.club || 'Reading';
-    document.getElementById('cMonth').value = c.month || '';
-    document.getElementById('cMaxStudents').value = c.max_students || 10;
-    document.getElementById('cSchedule').value = c.schedule || 'Mon-Thu';
-    document.getElementById('cTimeSlot').value = c.time_slot || 'Session 1 (Morning)';
-    document.getElementById('cStatus').value = c.status || 'Active';
-    document.getElementById('cNotes').value = c.notes || '';
-    cohortModal.style.display = 'flex';
-  };
-
-  window.deleteCohort = async function(id) {
-    if (!confirm('Delete this group and all its student assignments?')) return;
-    const { error } = await supabase.from('cohorts').delete().eq('id', id);
-    if (error) { alert('Error deleting: ' + error.message); return; }
-    await addActivity('Deleted a group');
-    await refreshAll();
-  };
-
-  window.assignStudents = async function(cohortId, maxStudents) {
-    currentAssignCohortId = cohortId;
-    currentAssignMax = maxStudents || 10;
-    const cohorts = await getCohorts();
-    const cohort = cohorts.find(c => c.id === cohortId);
-    document.getElementById('assignModalTitle').textContent = `Assign Students to ${cohort ? cohort.name : 'Group'}`;
-
-    const students = await getStudents();
-    const assigned = await getCohortStudents(cohortId);
-    const assignedIds = new Set(assigned.map(a => a.student_id));
-
-    const listEl = document.getElementById('assignStudentList');
-    listEl.innerHTML = students.map(s => `
-      <label class="assign-item">
-        <input type="checkbox" value="${s.id}" ${assignedIds.has(s.id) ? 'checked' : ''} onchange="updateAssignCounter()" />
-        <span><strong>${esc(s.name)}</strong> &mdash; ${esc(s.club)} ${s.grade ? '(Grade ' + esc(s.grade) + ')' : ''}</span>
-      </label>
-    `).join('');
-
-    if (students.length === 0) {
-      listEl.innerHTML = '<p class="empty-state">No students to assign. Add students first.</p>';
-    }
-
-    updateAssignCounter();
-    assignModal.style.display = 'flex';
-  };
-
-  window.updateAssignCounter = function() {
-    const checkboxes = document.querySelectorAll('#assignStudentList input[type="checkbox"]');
-    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
-    const counter = document.getElementById('assignCounter');
-    counter.textContent = `${checked} / ${currentAssignMax} spots filled`;
-    counter.classList.toggle('full', checked >= currentAssignMax);
-
-    // Disable unchecked boxes when at max
-    checkboxes.forEach(cb => {
-      if (!cb.checked && checked >= currentAssignMax) {
-        cb.disabled = true;
-        cb.closest('.assign-item').style.opacity = '0.4';
-      } else {
-        cb.disabled = false;
-        cb.closest('.assign-item').style.opacity = '1';
-      }
-    });
-  };
-
-  document.getElementById('assignModalClose').addEventListener('click', () => assignModal.style.display = 'none');
-  document.getElementById('assignCancelBtn').addEventListener('click', () => assignModal.style.display = 'none');
-  assignModal.addEventListener('click', (e) => { if (e.target === assignModal) assignModal.style.display = 'none'; });
-
-  document.getElementById('assignSaveBtn').addEventListener('click', async () => {
-    if (!currentAssignCohortId) return;
-
-    const checkboxes = document.querySelectorAll('#assignStudentList input[type="checkbox"]');
-    const selectedIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
-
-    if (selectedIds.length > currentAssignMax) {
-      alert(`This cohort has a maximum of ${currentAssignMax} students. Please uncheck some.`);
-      return;
-    }
-
-    // Remove all existing assignments for this cohort
-    await supabase.from('cohort_students').delete().eq('cohort_id', currentAssignCohortId);
-
-    // Insert new assignments
-    if (selectedIds.length > 0) {
-      const rows = selectedIds.map(sid => ({ cohort_id: currentAssignCohortId, student_id: sid }));
-      const { error } = await supabase.from('cohort_students').insert(rows);
-      if (error) { alert('Error assigning students: ' + error.message); return; }
-    }
-
-    await addActivity(`Updated group assignments (${selectedIds.length} / ${currentAssignMax} students)`);
-    assignModal.style.display = 'none';
-    await refreshAll();
-  });
 
   // ===== HELPERS =====
   function esc(str) {

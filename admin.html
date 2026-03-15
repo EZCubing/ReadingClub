@@ -48,9 +48,8 @@
       <button class="dash-tab active" data-tab="overview">Overview</button>
       <button class="dash-tab" data-tab="students">Pipeline <span class="new-badge" id="newBadge" style="display:none;"></span></button>
       <button class="dash-tab" data-tab="roster">Current Students</button>
-      <button class="dash-tab" data-tab="attendance">Attendance</button>
+      <button class="dash-tab" data-tab="groups">Groups &amp; Attendance</button>
       <button class="dash-tab" data-tab="payments">Payments</button>
-      <button class="dash-tab" data-tab="cohorts">Groups</button>
     </nav>
 
     <!-- ===== OVERVIEW TAB ===== -->
@@ -325,35 +324,43 @@
       </div>
     </div>
 
-    <!-- ===== ATTENDANCE TAB ===== -->
-    <div class="dash-panel" id="panel-attendance">
+    <!-- ===== GROUPS & ATTENDANCE TAB ===== -->
+    <div class="dash-panel" id="panel-groups">
       <div class="panel-header">
-        <h3>Attendance</h3>
-        <div class="panel-header__controls">
-          <input type="date" id="attendanceDate" />
-          <select id="attendanceClub">
-            <option value="">All Clubs</option>
-            <option value="Reading">Reading</option>
-            <option value="Math">Math</option>
-            <option value="Test Prep">Test Prep</option>
+        <h3>Groups &amp; Attendance</h3>
+        <button class="btn btn--primary btn--sm" id="addGroupBtn">+ New Group</button>
+      </div>
+
+      <!-- Day selector -->
+      <div class="day-selector">
+        <div class="day-selector__date">
+          <input type="date" id="groupDate" />
+        </div>
+        <div class="day-selector__days">
+          <button class="day-btn" data-day="Monday">Mon</button>
+          <button class="day-btn" data-day="Tuesday">Tue</button>
+          <button class="day-btn" data-day="Wednesday">Wed</button>
+          <button class="day-btn" data-day="Thursday">Thu</button>
+        </div>
+        <div class="day-selector__filter">
+          <select id="groupScheduleFilter">
+            <option value="">All Schedules</option>
+            <option value="Mon/Wed">Mon / Wed</option>
+            <option value="Tue/Thu">Tue / Thu</option>
           </select>
-          <button class="btn btn--primary btn--sm" id="saveAttendanceBtn">Save Attendance</button>
         </div>
       </div>
-      <div class="table-wrap">
-        <table class="data-table" id="attendanceTable">
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Club</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="attendanceBody"></tbody>
-        </table>
-        <p class="empty-state" id="attendanceEmpty">No students enrolled. Add students first.</p>
+
+      <!-- Today's info -->
+      <div class="day-info" id="dayInfo"></div>
+
+      <!-- Group cards with attendance -->
+      <div class="group-cards" id="groupCards">
+        <p class="empty-state" id="groupsEmpty">No groups yet. Click "+ New Group" to create one.</p>
       </div>
-      <div class="attendance-history">
+
+      <!-- Attendance History -->
+      <div class="attendance-history" style="margin-top:40px;">
         <h3>Attendance History</h3>
         <div class="table-wrap">
           <table class="data-table" id="historyTable">
@@ -361,7 +368,8 @@
               <tr>
                 <th>Date</th>
                 <th>Student</th>
-                <th>Club</th>
+                <th>Group</th>
+                <th>Teacher</th>
                 <th>Status</th>
                 <th>Change</th>
               </tr>
@@ -369,6 +377,81 @@
             <tbody id="historyBody"></tbody>
           </table>
           <p class="empty-state" id="historyEmpty">No attendance records yet.</p>
+        </div>
+      </div>
+
+      <!-- New Group Modal -->
+      <div class="modal" id="groupModal" style="display:none;">
+        <div class="modal__card">
+          <div class="modal__header">
+            <h3 id="groupModalTitle">New Group</h3>
+            <button class="modal__close" id="groupModalClose">&times;</button>
+          </div>
+          <form id="groupForm">
+            <input type="hidden" id="gId" />
+            <div class="form-grid">
+              <div class="field">
+                <label>Group Name</label>
+                <input type="text" id="gName" placeholder="e.g. Reading Group A" required />
+              </div>
+              <div class="field">
+                <label>Teacher</label>
+                <select id="gTeacher" required>
+                  <option value="">Select Teacher</option>
+                  <option value="Jennifer Jaramillo">Jennifer Jaramillo</option>
+                  <option value="Dale Jaramillo">Dale Jaramillo</option>
+                  <option value="Stephanie Brennen">Stephanie Brennen</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Schedule</label>
+                <select id="gSchedule" required>
+                  <option value="Mon/Wed">Monday / Wednesday</option>
+                  <option value="Tue/Thu">Tuesday / Thursday</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Time</label>
+                <select id="gTime" required>
+                  <option value="2:15-3:15 PM">2:15 - 3:15 PM</option>
+                  <option value="4:00-5:00 PM">4:00 - 5:00 PM</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Club</label>
+                <select id="gClub">
+                  <option value="Reading">Reading</option>
+                  <option value="Math">Math</option>
+                  <option value="Test Prep">Test Prep</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Max Students</label>
+                <input type="number" id="gMax" min="1" max="10" value="10" />
+              </div>
+            </div>
+            <div class="modal__actions">
+              <button type="button" class="btn btn--outline-dark" id="groupCancelBtn">Cancel</button>
+              <button type="submit" class="btn btn--primary">Save Group</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Assign Students to Group Modal -->
+      <div class="modal" id="assignModal" style="display:none;">
+        <div class="modal__card">
+          <div class="modal__header">
+            <h3 id="assignModalTitle">Assign Students</h3>
+            <button class="modal__close" id="assignModalClose">&times;</button>
+          </div>
+          <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:8px;">Select students for this group. Only showing students on the matching schedule.</p>
+          <p class="assign-counter" id="assignCounter">0 / 10 spots filled</p>
+          <div id="assignStudentList" class="assign-list"></div>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--outline-dark" id="assignCancelBtn">Cancel</button>
+            <button type="button" class="btn btn--primary" id="assignSaveBtn">Save Assignments</button>
+          </div>
         </div>
       </div>
     </div>
@@ -487,108 +570,6 @@
       </div>
     </div>
 
-    <!-- ===== COHORTS TAB ===== -->
-    <div class="dash-panel" id="panel-cohorts">
-      <div class="panel-header">
-        <h3>Groups</h3>
-        <button class="btn btn--primary btn--sm" id="addCohortBtn">+ New Group</button>
-      </div>
-
-      <!-- Cohort Cards -->
-      <div class="cohort-list" id="cohortList">
-        <p class="empty-state" id="cohortsEmpty">No groups yet. Click "+ New Group" to create one.</p>
-      </div>
-
-      <!-- New Cohort Modal -->
-      <div class="modal" id="cohortModal" style="display:none;">
-        <div class="modal__card">
-          <div class="modal__header">
-            <h3 id="cohortModalTitle">New Group</h3>
-            <button class="modal__close" id="cohortModalClose">&times;</button>
-          </div>
-          <form id="cohortForm">
-            <input type="hidden" id="cohortId" />
-            <div class="form-grid">
-              <div class="field">
-                <label>Group Name</label>
-                <input type="text" id="cName" placeholder="e.g. June 2026 Reading Group A" required />
-              </div>
-              <div class="field">
-                <label>Teacher Name</label>
-                <input type="text" id="cTeacher" placeholder="e.g. Mrs. Jaramillo" required />
-              </div>
-              <div class="field">
-                <label>Club</label>
-                <select id="cClub">
-                  <option value="Reading">Reading</option>
-                  <option value="Math">Math</option>
-                  <option value="Test Prep">Test Prep</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Month</label>
-                <input type="month" id="cMonth" required />
-              </div>
-              <div class="field">
-                <label>Max Students</label>
-                <input type="number" id="cMaxStudents" min="1" max="10" value="10" />
-              </div>
-              <div class="field">
-                <label>Days</label>
-                <select id="cSchedule">
-                  <option value="Mon-Thu">Monday - Thursday</option>
-                  <option value="Mon-Wed">Monday - Wednesday</option>
-                  <option value="Tue-Thu">Tuesday - Thursday</option>
-                  <option value="Mon-Fri">Monday - Friday</option>
-                  <option value="Custom">Custom</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Time Slot</label>
-                <select id="cTimeSlot">
-                  <option value="Session 1 (Morning)">Session 1 (Morning)</option>
-                  <option value="Session 2 (Midday)">Session 2 (Midday)</option>
-                  <option value="Session 3 (Afternoon)">Session 3 (Afternoon)</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Status</label>
-                <select id="cStatus">
-                  <option value="Active">Active</option>
-                  <option value="Upcoming">Upcoming</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </div>
-            </div>
-            <div class="field">
-              <label>Notes</label>
-              <textarea id="cNotes" rows="2" placeholder="Schedule, goals, etc."></textarea>
-            </div>
-            <div class="modal__actions">
-              <button type="button" class="btn btn--outline-dark" id="cohortCancelBtn">Cancel</button>
-              <button type="submit" class="btn btn--primary">Save Cohort</button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Assign Students Modal -->
-      <div class="modal" id="assignModal" style="display:none;">
-        <div class="modal__card">
-          <div class="modal__header">
-            <h3 id="assignModalTitle">Assign Students</h3>
-            <button class="modal__close" id="assignModalClose">&times;</button>
-          </div>
-          <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:8px;">Check students to add to this cohort.</p>
-          <p class="assign-counter" id="assignCounter">0 / 10 spots filled</p>
-          <div id="assignStudentList" class="assign-list"></div>
-          <div class="modal__actions">
-            <button type="button" class="btn btn--outline-dark" id="assignCancelBtn">Cancel</button>
-            <button type="button" class="btn btn--primary" id="assignSaveBtn">Save Assignments</button>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </div>
 
