@@ -8,7 +8,7 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // ===== ADMIN PASSWORD =====
-  const ADMIN_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8'; // "password"
+  const ADMIN_HASH = 'e9b0a665cfc6af5981d93cab75f2770ab5c0b640b3d7682f7688ff5420a28f20';
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
