@@ -112,7 +112,10 @@
       getStudents(), getPayments(), getAttendance(), getActivity()
     ]);
 
-    document.getElementById('kpiStudents').textContent = students.length;
+    const placedStudents = students.filter(s => s.status === 'Placed');
+    const pipelineStudents = students.filter(s => s.status !== 'Placed');
+    document.getElementById('kpiMembers').textContent = placedStudents.length;
+    document.getElementById('kpiPipeline').textContent = pipelineStudents.length;
 
     const totalAtt = attendance.length;
     const present = attendance.filter(a => a.status === 'P').length;
@@ -212,7 +215,7 @@
     } else {
       const { error } = await supabase.from('students').insert(student);
       if (error) { alert('Error adding student: ' + error.message); return; }
-      await addActivity(`New student: ${student.name} (Survey Submitted)`);
+      await addActivity(`New student: ${student.name} (${student.status})`);
     }
 
     studentModal.style.display = 'none';
