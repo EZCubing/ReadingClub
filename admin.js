@@ -523,7 +523,10 @@
 
   // ===== GROUPS & ATTENDANCE =====
   const groupDateInput = document.getElementById('groupDate');
+  const groupTeacherFilter = document.getElementById('groupTeacherFilter');
   let currentScheduleFilter = '';
+
+  groupTeacherFilter.addEventListener('change', () => renderGroups());
 
   function getScheduleForDate() {
     const date = new Date(groupDateInput.value + 'T12:00:00');
@@ -571,9 +574,13 @@
     const schedFilter = currentScheduleFilter || getScheduleForDate();
 
     const placed = allStudents.filter(s => s.status === 'Placed' || !s.status);
+    const teacherFilter = groupTeacherFilter.value;
 
-    // Filter students strictly by schedule — only show matching group
+    // Filter students by schedule
     let dayStudents = placed.filter(s => s.student_group === schedFilter);
+
+    // Filter by teacher
+    if (teacherFilter) dayStudents = dayStudents.filter(s => s.teacher === teacherFilter);
 
     // Group students by: teacher + group + time + RM level + lesson
     const groupMap = {};

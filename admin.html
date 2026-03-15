@@ -332,7 +332,7 @@
         <h3>Groups &amp; Attendance</h3>
       </div>
 
-      <!-- Day selector -->
+      <!-- Filters -->
       <div class="day-selector">
         <div class="day-selector__date">
           <input type="date" id="groupDate" />
@@ -341,6 +341,12 @@
           <button class="day-btn" data-schedule="Mon/Wed">Mon / Wed</button>
           <button class="day-btn" data-schedule="Tue/Thu">Tue / Thu</button>
         </div>
+        <select id="groupTeacherFilter" style="padding:8px 14px;border:2px solid var(--border);border-radius:8px;font-family:var(--font);font-size:0.85rem;">
+          <option value="">All Teachers</option>
+          <option value="Dale Jaramillo">Dale Jaramillo</option>
+          <option value="Jennifer Jaramillo">Jennifer Jaramillo</option>
+          <option value="Stephanie Brennen">Stephanie Brennen</option>
+        </select>
       </div>
 
       <!-- Today's info -->
