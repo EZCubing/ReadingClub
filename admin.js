@@ -96,6 +96,7 @@
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('groupDate').value = today;
     billingMonthInput.value = getCurrentMonth();
+    currentScheduleFilter = getScheduleForDate();
     updateDayButtons();
     await refreshAll();
   }
@@ -444,38 +445,34 @@
 
   // ===== GROUPS & ATTENDANCE =====
   const groupDateInput = document.getElementById('groupDate');
-  const groupScheduleFilter = document.getElementById('groupScheduleFilter');
-  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const DAY_TO_SCHEDULE = { Monday: 'Mon/Wed', Tuesday: 'Tue/Thu', Wednesday: 'Mon/Wed', Thursday: 'Tue/Thu' };
+  let currentScheduleFilter = '';
 
-  function getSelectedDay() {
+  function getScheduleForDate() {
     const date = new Date(groupDateInput.value + 'T12:00:00');
-    return DAYS[date.getDay()];
+    const day = date.getDay();
+    if (day === 1 || day === 3) return 'Mon/Wed';
+    if (day === 2 || day === 4) return 'Tue/Thu';
+    return '';
   }
 
   function updateDayButtons() {
-    const selectedDay = getSelectedDay();
+    const sched = currentScheduleFilter || getScheduleForDate();
     document.querySelectorAll('.day-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.day === selectedDay);
+      btn.classList.toggle('active', btn.dataset.schedule === sched);
     });
   }
 
-  groupDateInput.addEventListener('change', () => { updateDayButtons(); renderGroups(); });
-  groupScheduleFilter.addEventListener('change', () => renderGroups());
+  groupDateInput.addEventListener('change', () => {
+    currentScheduleFilter = getScheduleForDate();
+    updateDayButtons();
+    renderGroups();
+  });
 
   document.querySelectorAll('.day-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      // Find next occurrence of this day from current date
-      const target = DAYS.indexOf(btn.dataset.day);
-      const current = new Date(groupDateInput.value + 'T12:00:00');
-      const currentDay = current.getDay();
-      let diff = target - currentDay;
-      if (diff < 0) diff += 7;
-      if (diff === 0) diff = 0;
-      const newDate = new Date(current);
-      newDate.setDate(newDate.getDate() + diff);
-      groupDateInput.value = newDate.toISOString().split('T')[0];
-      updateDayButtons();
+      currentScheduleFilter = btn.dataset.schedule;
+      document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       renderGroups();
     });
   });
@@ -486,22 +483,12 @@
     const container = document.getElementById('groupCards');
     const empty = document.getElementById('groupsEmpty');
     const date = groupDateInput.value;
-    const day = getSelectedDay();
-    const scheduleForDay = DAY_TO_SCHEDULE[day];
-    const schedFilter = groupScheduleFilter.value;
+    const schedFilter = currentScheduleFilter || getScheduleForDate();
 
     const placed = allStudents.filter(s => s.status === 'Placed' || !s.status);
 
-    // Filter students who meet on this day
-    let dayStudents = placed.filter(s => {
-      if (s.student_group === 'Mon/Wed' && (day === 'Monday' || day === 'Wednesday')) return true;
-      if (s.student_group === 'Tue/Thu' && (day === 'Tuesday' || day === 'Thursday')) return true;
-      return false;
-    });
-
-    if (schedFilter) {
-      dayStudents = dayStudents.filter(s => s.student_group === schedFilter);
-    }
+    // Filter students by schedule
+    let dayStudents = schedFilter ? placed.filter(s => s.student_group === schedFilter) : placed;
 
     // Group students by: teacher + time_slot + level
     const groupMap = {};
@@ -517,12 +504,12 @@
     // Day info
     const dayInfo = document.getElementById('dayInfo');
     const dateLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    dayInfo.innerHTML = `<strong>${dateLabel}</strong> — ${groupKeys.length} group(s), ${dayStudents.length} student(s) ${scheduleForDay ? '(' + scheduleForDay + ')' : ''}`;
+    dayInfo.innerHTML = `<strong>${dateLabel}</strong> — ${schedFilter || 'All'} — ${groupKeys.length} group(s), ${dayStudents.length} student(s)`;
 
     if (groupKeys.length === 0) {
       container.innerHTML = '';
       empty.style.display = 'block';
-      empty.textContent = placed.length === 0 ? 'No current students. Add students first.' : 'No students scheduled for ' + day + '.';
+      empty.textContent = placed.length === 0 ? 'No current students. Add students first.' : 'No students on ' + (schedFilter || 'this schedule') + '.';
       return;
     }
     empty.style.display = 'none';
