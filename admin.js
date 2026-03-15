@@ -44,16 +44,60 @@
     await supabase.from('activity_log').insert({ text });
   }
 
-  // ===== LOGIN =====
+  // ===== LOGIN & SECURITY =====
   const loginScreen = document.getElementById('loginScreen');
   const dashboard = document.getElementById('dashboard');
   const loginForm = document.getElementById('loginForm');
   const loginError = document.getElementById('loginError');
+  const TIMEOUT_MINUTES = 10;
+  let inactivityTimer = null;
 
-  if (sessionStorage.getItem('rc_auth') === '1') {
+  function logout() {
+    sessionStorage.removeItem('rc_auth');
+    sessionStorage.removeItem('rc_auth_time');
+    location.reload();
+  }
+
+  function resetInactivityTimer() {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      alert('You have been logged out due to inactivity.');
+      logout();
+    }, TIMEOUT_MINUTES * 60 * 1000);
+    // Update last activity time
+    sessionStorage.setItem('rc_auth_time', Date.now().toString());
+  }
+
+  function isSessionValid() {
+    if (sessionStorage.getItem('rc_auth') !== '1') return false;
+    const authTime = parseInt(sessionStorage.getItem('rc_auth_time') || '0');
+    // Session expires after 10 minutes of no activity
+    if (Date.now() - authTime > TIMEOUT_MINUTES * 60 * 1000) {
+      sessionStorage.removeItem('rc_auth');
+      sessionStorage.removeItem('rc_auth_time');
+      return false;
+    }
+    return true;
+  }
+
+  function startSecurityListeners() {
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(event => {
+      document.addEventListener(event, resetInactivityTimer);
+    });
+    resetInactivityTimer();
+  }
+
+  // Check session on page load
+  if (isSessionValid()) {
     loginScreen.style.display = 'none';
     dashboard.style.display = 'block';
+    startSecurityListeners();
     initDashboard();
+  } else {
+    // Force login screen even if someone tries to navigate directly
+    sessionStorage.removeItem('rc_auth');
+    loginScreen.style.display = 'flex';
+    dashboard.style.display = 'none';
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -62,8 +106,10 @@
     const hash = await sha256(pw);
     if (hash === ADMIN_HASH) {
       sessionStorage.setItem('rc_auth', '1');
+      sessionStorage.setItem('rc_auth_time', Date.now().toString());
       loginScreen.style.display = 'none';
       dashboard.style.display = 'block';
+      startSecurityListeners();
       initDashboard();
     } else {
       loginError.textContent = 'Incorrect password. Try again.';
@@ -72,8 +118,7 @@
   });
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
-    sessionStorage.removeItem('rc_auth');
-    location.reload();
+    logout();
   });
 
   // ===== TABS =====
