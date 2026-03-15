@@ -346,11 +346,12 @@
 
     if (filtered.length === 0) {
       container.innerHTML = '';
-      empty.style.display = 'block';
       empty.textContent = students.length === 0 ? 'No students yet. Click "+ New Student" to get started.' : 'No students in this stage.';
+      empty.style.display = 'block';
       return;
     }
     empty.style.display = 'none';
+    container.style.display = '';
 
     container.innerHTML = filtered.map(s => {
       const stage = s.status || 'Survey Submitted';
