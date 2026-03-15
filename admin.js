@@ -537,10 +537,12 @@
   const rosterFilterTeacher = document.getElementById('rosterFilterTeacher');
   const rosterFilterGroup = document.getElementById('rosterFilterGroup');
   const rosterFilterTime = document.getElementById('rosterFilterTime');
+  const rosterSearch = document.getElementById('rosterSearch');
 
   rosterFilterTeacher.addEventListener('change', () => renderRoster());
   rosterFilterGroup.addEventListener('change', () => renderRoster());
   rosterFilterTime.addEventListener('change', () => renderRoster());
+  rosterSearch.addEventListener('input', () => renderRoster());
 
   async function renderRoster() {
     const allStudents = await getStudents();
@@ -551,10 +553,19 @@
     const groupFilter = rosterFilterGroup.value;
     const timeFilter = rosterFilterTime.value;
 
+    const searchTerm = (rosterSearch.value || '').toLowerCase().trim();
+
     let filtered = placed;
     if (teacherFilter) filtered = filtered.filter(s => s.teacher === teacherFilter);
     if (groupFilter) filtered = filtered.filter(s => s.student_group === groupFilter);
     if (timeFilter) filtered = filtered.filter(s => s.time_slot === timeFilter);
+    if (searchTerm) filtered = filtered.filter(s =>
+      (s.name || '').toLowerCase().includes(searchTerm) ||
+      (s.parent || '').toLowerCase().includes(searchTerm) ||
+      (s.phone || '').toLowerCase().includes(searchTerm) ||
+      (s.email || '').toLowerCase().includes(searchTerm) ||
+      (s.grade || '').toLowerCase().includes(searchTerm)
+    );
 
     // KPIs reflect the filtered set
     document.getElementById('rosterTotal').textContent = filtered.length;

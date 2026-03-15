@@ -929,6 +929,15 @@ a:hover { color: var(--clr-sun-warm); }
   text-transform: uppercase;
   margin-bottom: 24px;
   animation: pulse 2s ease-in-out infinite;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.register-banner__badge:hover {
+  background: var(--clr-sun);
+  color: var(--clr-green-dark);
+  transform: translateY(-2px);
 }
 
 @keyframes pulse {
