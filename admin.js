@@ -844,6 +844,9 @@
       btn.classList.add('selected');
       selectedPayMethod = btn.dataset.method;
       document.getElementById('pMethod').value = selectedPayMethod;
+      if (selectedPayMethod === 'Free') {
+        document.getElementById('pAmount').value = '0';
+      }
     });
   });
 
@@ -940,9 +943,10 @@
         const totalPaid = studentPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
         const lastPayment = studentPayments.length > 0 ? studentPayments[0] : null;
 
+        const hasFree = studentPayments.some(p => p.method === 'Free');
         const paymentsDetail = studentPayments.map(p =>
           `<div style="font-size:0.78rem;color:var(--text-light);display:flex;align-items:center;gap:8px;">
-            <span>${esc(p.date)} — $${parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
+            <span>${esc(p.date)} — ${p.method === 'Free' ? 'Free' : '$' + parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
             <button onclick="editPayment('${p.id}', ${parseFloat(p.amount)}, '${esc(p.method)}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
             <button onclick="deletePayment('${p.id}')" style="background:#FFEBEE;border:1px solid #FFCDD2;color:#e53935;font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
           </div>`
@@ -951,7 +955,7 @@
         return `<tr>
           <td><strong>${esc(s.name)}</strong></td>
           <td>${esc(s.club)}</td>
-          <td>${totalPaid > 0 ? `<span class="billing-status paid">$${totalPaid.toFixed(2)}</span>` : '<span class="billing-status unpaid">$0.00</span>'}</td>
+          <td>${hasFree ? '<span class="billing-status" style="background:#E3F2FD;color:#1565C0;">Free</span>' : totalPaid > 0 ? `<span class="billing-status paid">$${totalPaid.toFixed(2)}</span>` : '<span class="billing-status unpaid">$0.00</span>'}</td>
           <td>${paymentsDetail || '—'}</td>
           <td><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
         </tr>`;
