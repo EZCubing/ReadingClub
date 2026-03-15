@@ -99,7 +99,7 @@
       // Hide admin-only tabs
       document.querySelectorAll('.dash-tab').forEach(tab => {
         const t = tab.dataset.tab;
-        if (t === 'overview' || t === 'students' || t === 'payments') {
+        if (t === 'overview' || t === 'students' || t === 'payments' || t === 'costs') {
           tab.style.display = 'none';
         }
       });
@@ -188,6 +188,7 @@
       if (tab.dataset.tab === 'groups') renderGroups();
       if (tab.dataset.tab === 'payments') renderPayments();
       if (tab.dataset.tab === 'overview') renderOverview();
+      if (tab.dataset.tab === 'costs') renderCosts();
     });
   });
 
@@ -209,6 +210,7 @@
       renderPayments(),
       renderOverview(),
       renderHistory(),
+      renderCosts(),
     ]);
   }
 
@@ -1007,6 +1009,115 @@
 
 
 
+
+  // ===== COSTS =====
+  const costModal = document.getElementById('costModal');
+  const costForm = document.getElementById('costForm');
+
+  async function getCosts() {
+    const { data, error } = await supabase.from('costs').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('Error fetching costs:', error); return []; }
+    return data || [];
+  }
+
+  document.getElementById('addCostBtn').addEventListener('click', () => {
+    document.getElementById('costModalTitle').textContent = 'Add Cost';
+    costForm.reset();
+    document.getElementById('costId').value = '';
+    document.getElementById('costDate').value = new Date().toISOString().split('T')[0];
+    costModal.style.display = 'flex';
+  });
+
+  document.getElementById('costModalClose').addEventListener('click', () => costModal.style.display = 'none');
+  document.getElementById('costCancelBtn').addEventListener('click', () => costModal.style.display = 'none');
+  costModal.addEventListener('click', (e) => { if (e.target === costModal) costModal.style.display = 'none'; });
+
+  costForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('costId').value;
+    const cost = {
+      description: document.getElementById('costDesc').value,
+      category: document.getElementById('costCategory').value,
+      amount: parseFloat(document.getElementById('costAmount').value),
+      frequency: document.getElementById('costFrequency').value,
+      date: document.getElementById('costDate').value,
+      notes: document.getElementById('costNotes').value,
+    };
+
+    if (id) {
+      const { error } = await supabase.from('costs').update(cost).eq('id', id);
+      if (error) { alert('Error: ' + error.message); return; }
+      await addActivity(`Updated cost: ${cost.description}`);
+    } else {
+      const { error } = await supabase.from('costs').insert(cost);
+      if (error) { alert('Error: ' + error.message); return; }
+      await addActivity(`Added cost: ${cost.description} ($${cost.amount} ${cost.frequency})`);
+    }
+    costModal.style.display = 'none';
+    await renderCosts();
+  });
+
+  async function renderCosts() {
+    const costs = await getCosts();
+    const body = document.getElementById('costsBody');
+    const empty = document.getElementById('costsEmpty');
+
+    // KPIs
+    const monthly = costs.filter(c => c.frequency === 'Monthly').reduce((sum, c) => sum + parseFloat(c.amount), 0);
+    const yearly = costs.filter(c => c.frequency === 'Yearly').reduce((sum, c) => sum + parseFloat(c.amount), 0);
+    const oneTime = costs.filter(c => c.frequency === 'One-Time').reduce((sum, c) => sum + parseFloat(c.amount), 0);
+    const employees = costs.filter(c => c.category === 'Employee' && c.frequency === 'Monthly').reduce((sum, c) => sum + parseFloat(c.amount), 0);
+
+    document.getElementById('costMonthly').textContent = '$' + monthly.toFixed(2);
+    document.getElementById('costYearly').textContent = '$' + yearly.toFixed(2);
+    document.getElementById('costOneTime').textContent = '$' + oneTime.toFixed(2);
+    document.getElementById('costEmployees').textContent = '$' + employees.toFixed(2);
+
+    if (costs.length === 0) {
+      body.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    body.innerHTML = costs.map(c => `
+      <tr>
+        <td><strong>${esc(c.description)}</strong></td>
+        <td>${esc(c.category)}</td>
+        <td>${esc(c.frequency)}</td>
+        <td>$${parseFloat(c.amount).toFixed(2)}</td>
+        <td>${esc(c.date)}</td>
+        <td>${esc(c.notes)}</td>
+        <td class="actions">
+          <button onclick="editCost('${c.id}')">Edit</button>
+          <button class="del" onclick="deleteCost('${c.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  window.editCost = async function(id) {
+    const costs = await getCosts();
+    const c = costs.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('costModalTitle').textContent = 'Edit Cost';
+    document.getElementById('costId').value = c.id;
+    document.getElementById('costDesc').value = c.description || '';
+    document.getElementById('costCategory').value = c.category || 'Other';
+    document.getElementById('costAmount').value = c.amount || '';
+    document.getElementById('costFrequency').value = c.frequency || 'Monthly';
+    document.getElementById('costDate').value = c.date || '';
+    document.getElementById('costNotes').value = c.notes || '';
+    costModal.style.display = 'flex';
+  };
+
+  window.deleteCost = async function(id) {
+    if (!confirm('Delete this cost?')) return;
+    const { error } = await supabase.from('costs').delete().eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity('Deleted a cost');
+    await renderCosts();
+  };
 
   // ===== HELPERS =====
   function esc(str) {

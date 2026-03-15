@@ -52,6 +52,7 @@
       <button class="dash-tab" data-tab="roster">Current Students</button>
       <button class="dash-tab" data-tab="groups">Groups &amp; Attendance</button>
       <button class="dash-tab" data-tab="payments">Payments</button>
+      <button class="dash-tab" data-tab="costs">Costs</button>
     </nav>
 
     <!-- ===== OVERVIEW TAB ===== -->
@@ -491,6 +492,109 @@
       </div>
     </div>
 
+    <!-- ===== COSTS TAB ===== -->
+    <div class="dash-panel" id="panel-costs">
+      <div class="panel-header">
+        <h3>Company Costs</h3>
+        <button class="btn btn--primary btn--sm" id="addCostBtn">+ Add Cost</button>
+      </div>
+
+      <!-- Cost summary -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi__value" id="costMonthly">$0</div>
+          <div class="kpi__label">Monthly Costs</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="costYearly">$0</div>
+          <div class="kpi__label">Yearly Costs</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="costOneTime">$0</div>
+          <div class="kpi__label">One-Time Costs</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__value" id="costEmployees">$0</div>
+          <div class="kpi__label">Employee Costs (Monthly)</div>
+        </div>
+      </div>
+
+      <!-- Costs table -->
+      <div class="table-wrap">
+        <table class="data-table" id="costsTable">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Frequency</th>
+              <th>Amount</th>
+              <th>Date Added</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="costsBody"></tbody>
+        </table>
+        <p class="empty-state" id="costsEmpty">No costs recorded yet. Click "+ Add Cost" to get started.</p>
+      </div>
+    </div>
+
+    <!-- Cost Modal -->
+    <div class="modal" id="costModal" style="display:none;">
+      <div class="modal__card">
+        <div class="modal__header">
+          <h3 id="costModalTitle">Add Cost</h3>
+          <button class="modal__close" id="costModalClose">&times;</button>
+        </div>
+        <form id="costForm">
+          <input type="hidden" id="costId" />
+          <div class="form-grid">
+            <div class="field">
+              <label>Description</label>
+              <input type="text" id="costDesc" placeholder="e.g. Rent, Supplies, Teacher Pay" required />
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <select id="costCategory" required>
+                <option value="Employee">Employee / Payroll</option>
+                <option value="Rent">Rent / Facility</option>
+                <option value="Supplies">Supplies / Materials</option>
+                <option value="Software">Software / Subscriptions</option>
+                <option value="Marketing">Marketing / Advertising</option>
+                <option value="Insurance">Insurance</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Amount ($)</label>
+              <input type="number" id="costAmount" step="0.01" min="0" required />
+            </div>
+            <div class="field">
+              <label>Frequency</label>
+              <select id="costFrequency" required>
+                <option value="Monthly">Monthly</option>
+                <option value="Yearly">Yearly</option>
+                <option value="One-Time">One-Time</option>
+                <option value="Weekly">Weekly</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="costDate" required />
+            </div>
+          </div>
+          <div class="field">
+            <label>Notes (optional)</label>
+            <textarea id="costNotes" rows="2"></textarea>
+          </div>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--outline-dark" id="costCancelBtn">Cancel</button>
+            <button type="submit" class="btn btn--primary">Save Cost</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
   </div>
 
