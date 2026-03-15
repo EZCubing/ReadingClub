@@ -703,44 +703,55 @@
     const selections = groupAttSelections[groupId];
     if (!selections || Object.keys(selections).length === 0) return alert('Please mark attendance for at least one student.');
 
-    const records = Object.entries(selections).map(([studentId, info]) => ({
-      date, student_id: studentId, student_name: info.name, club: info.club || '', status: info.status,
-    }));
+    // Disable the save button to prevent double-clicks
+    const saveBtn = document.querySelector(`[onclick="saveAutoGroupAttendance('${groupId}')"]`);
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
 
-    for (const r of records) {
-      await supabase.from('attendance').delete().eq('date', date).eq('student_id', r.student_id);
+    try {
+      const records = Object.entries(selections).map(([studentId, info]) => ({
+        date, student_id: studentId, student_name: info.name, club: info.club || '', status: info.status,
+      }));
+
+      // Delete existing records for these students on this date, then insert
+      for (const r of records) {
+        await supabase.from('attendance').delete().eq('date', date).eq('student_id', r.student_id);
+      }
+      const { error } = await supabase.from('attendance').insert(records);
+      if (error) { alert('Error saving attendance: ' + error.message); return; }
+
+      // Advance lesson by 1 for ALL students (P, A, and L)
+      for (const r of records) {
+        const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
+        const currentLesson = (student && student.lesson != null) ? student.lesson : 0;
+        const newLesson = Math.min(currentLesson + 1, 180);
+        await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
+      }
+
+      // Create missed lesson records for absent students (ML flag)
+      const absentStudents = records.filter(r => r.status === 'A');
+      for (const r of absentStudents) {
+        const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
+        const missedLesson = (student && student.lesson != null) ? student.lesson - 1 : 0;
+        await supabase.from('missed_lessons').insert({
+          student_id: r.student_id,
+          student_name: r.student_name,
+          lesson: missedLesson,
+          date: date,
+        });
+      }
+
+      const mlCount = absentStudents.length;
+      await addActivity(`Attendance: ${records.length} student(s) on ${date} — lessons advanced${mlCount > 0 ? ', ' + mlCount + ' ML flagged' : ''}`);
+      delete groupAttSelections[groupId];
+
+      // Refresh everything
+      await Promise.all([renderGroups(), renderRoster(), renderOverview(), renderHistory()]);
+      alert(`Saved! ${records.length} student(s) recorded.${mlCount > 0 ? ' ' + mlCount + ' missed lesson(s) flagged.' : ''}`);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Attendance'; }
     }
-    const { error } = await supabase.from('attendance').insert(records);
-    if (error) { alert('Error: ' + error.message); return; }
-
-    // Advance lesson by 1 for ALL students (P, A, and L)
-    for (const r of records) {
-      const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
-      const currentLesson = (student && student.lesson != null) ? student.lesson : 0;
-      const newLesson = Math.min(currentLesson + 1, 180);
-      await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
-    }
-
-    // Create missed lesson records for absent students (ML flag)
-    const absentStudents = records.filter(r => r.status === 'A');
-    for (const r of absentStudents) {
-      const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
-      const missedLesson = (student && student.lesson != null) ? student.lesson - 1 : 0;
-      await supabase.from('missed_lessons').insert({
-        student_id: r.student_id,
-        student_name: r.student_name,
-        lesson: missedLesson,
-        date: date,
-      });
-    }
-
-    const mlCount = absentStudents.length;
-    await addActivity(`Attendance saved: ${records.length} student(s) on ${date} — ${records.length} lesson(s) advanced${mlCount > 0 ? ', ' + mlCount + ' missed lesson(s) flagged' : ''}`);
-    delete groupAttSelections[groupId];
-    await renderGroups();
-    await renderRoster();
-    await renderOverview();
-    alert(`Attendance saved for ${records.length} student(s).${advancedCount > 0 ? ' ' + advancedCount + ' student(s) advanced to next lesson.' : ''}`);
   };
 
   window.completeMissedLesson = async function(id) {
@@ -751,25 +762,84 @@
   };
 
   // History
+  const historyFilter = document.getElementById('historyFilter');
+  const historyDateFilter = document.getElementById('historyDateFilter');
+
+  historyFilter.addEventListener('change', () => renderHistory());
+  historyDateFilter.addEventListener('change', () => {
+    historyFilter.value = 'custom';
+    renderHistory();
+  });
+
+  function getHistoryDateRange() {
+    const filter = historyFilter.value;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    if (filter === 'today') {
+      return { start: todayStr, end: todayStr };
+    }
+    if (filter === 'week') {
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      const friday = new Date(monday);
+      friday.setDate(monday.getDate() + 4);
+      return { start: monday.toISOString().split('T')[0], end: friday.toISOString().split('T')[0] };
+    }
+    if (filter === 'month') {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] };
+    }
+    if (filter === 'custom') {
+      const d = historyDateFilter.value;
+      return d ? { start: d, end: d } : null;
+    }
+    return null; // all
+  }
+
   async function renderHistory() {
-    const records = await getAttendance();
+    const allRecords = await getAttendance();
     const body = document.getElementById('historyBody');
     const empty = document.getElementById('historyEmpty');
+    const summary = document.getElementById('historySummary');
+
+    // Filter by date range
+    const range = getHistoryDateRange();
+    let records = allRecords;
+    if (range) {
+      records = allRecords.filter(r => r.date >= range.start && r.date <= range.end);
+    }
+
+    // Summary stats
+    const totalPresent = records.filter(r => r.status === 'P').length;
+    const totalAbsent = records.filter(r => r.status === 'A').length;
+    const totalLate = records.filter(r => r.status === 'L').length;
+    const total = records.length;
+    const attRate = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
+
+    summary.innerHTML = `
+      <div class="history-stat"><div class="history-stat__value">${total}</div><div class="history-stat__label">Total Records</div></div>
+      <div class="history-stat"><div class="history-stat__value green">${totalPresent}</div><div class="history-stat__label">Present</div></div>
+      <div class="history-stat"><div class="history-stat__value red">${totalAbsent}</div><div class="history-stat__label">Absent</div></div>
+      <div class="history-stat"><div class="history-stat__value yellow">${totalLate}</div><div class="history-stat__label">Late</div></div>
+      <div class="history-stat"><div class="history-stat__value">${attRate}%</div><div class="history-stat__label">Attendance Rate</div></div>
+    `;
 
     if (records.length === 0) {
       body.innerHTML = '';
       empty.style.display = 'block';
+      empty.textContent = allRecords.length === 0 ? 'No attendance records yet.' : 'No records for this date range.';
       return;
     }
     empty.style.display = 'none';
 
     const statusLabels = { P: 'Present', A: 'Absent', L: 'Late' };
-    body.innerHTML = records.slice(0, 100).map(r => `
+    body.innerHTML = records.slice(0, 200).map(r => `
       <tr>
         <td>${esc(r.date)}</td>
-        <td>${esc(r.student_name)}</td>
-        <td>${esc(r.club)}</td>
-        <td></td>
+        <td><strong>${esc(r.student_name)}</strong></td>
         <td><span class="att-btn selected-${r.status}" style="cursor:default">${statusLabels[r.status] || r.status}</span></td>
         <td class="actions">
           <button onclick="changeAttStatus('${r.id}', 'P')">P</button>
@@ -786,9 +856,7 @@
     const { error } = await supabase.from('attendance').update({ status: newStatus }).eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity(`Changed attendance to ${statusLabels[newStatus]}`);
-    await renderHistory();
-    await renderGroups();
-    await renderOverview();
+    await Promise.all([renderHistory(), renderGroups(), renderOverview()]);
   };
 
   window.deleteAttRecord = async function(id) {

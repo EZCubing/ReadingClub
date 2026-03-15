@@ -1032,6 +1032,40 @@ body {
   font-style: italic;
 }
 
+.history-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.history-stat {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 12px 20px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  min-width: 100px;
+}
+
+.history-stat__value {
+  font-family: var(--font-h);
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.history-stat__value.green { color: var(--green-dark); }
+.history-stat__value.red { color: var(--red); }
+.history-stat__value.yellow { color: #F57F17; }
+
+.history-stat__label {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* ===== COHORTS ===== */
 .cohort-list {
   display: grid;
