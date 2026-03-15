@@ -174,6 +174,17 @@
     });
   });
 
+  // Add current student (skip pipeline)
+  document.getElementById('addCurrentStudentBtn').addEventListener('click', () => {
+    document.getElementById('studentModalTitle').textContent = 'Add Current Student';
+    studentForm.reset();
+    document.getElementById('studentId').value = '';
+    statusSelect.value = 'Placed';
+    updateFormSections();
+    studentModal.style.display = 'flex';
+  });
+
+  // Add new student (pipeline)
   document.getElementById('addStudentBtn').addEventListener('click', () => {
     document.getElementById('studentModalTitle').textContent = 'New Student';
     studentForm.reset();
