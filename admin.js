@@ -686,9 +686,8 @@
     const { error } = await supabase.from('attendance').insert(records);
     if (error) { alert('Error: ' + error.message); return; }
 
-    // Advance lesson by 1 for students marked Present
-    const presentStudents = records.filter(r => r.status === 'P');
-    for (const r of presentStudents) {
+    // Advance lesson by 1 for ALL students (P, A, and L)
+    for (const r of records) {
       const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
       if (student && student.lesson) {
         const newLesson = Math.min(student.lesson + 1, 180);
@@ -696,11 +695,12 @@
       }
     }
 
-    // Create missed lesson records for absent students
+    // Create missed lesson records for absent students (ML flag)
     const absentStudents = records.filter(r => r.status === 'A');
     for (const r of absentStudents) {
       const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
-      const missedLesson = student && student.lesson ? student.lesson : 0;
+      // The lesson was already advanced, so the missed lesson is the previous one
+      const missedLesson = student && student.lesson ? student.lesson - 1 : 0;
       await supabase.from('missed_lessons').insert({
         student_id: r.student_id,
         student_name: r.student_name,
@@ -709,9 +709,8 @@
       });
     }
 
-    const advancedCount = presentStudents.length;
     const mlCount = absentStudents.length;
-    await addActivity(`Attendance saved: ${records.length} student(s) on ${date}${advancedCount > 0 ? ' — ' + advancedCount + ' advanced' : ''}${mlCount > 0 ? ' — ' + mlCount + ' missed lesson(s)' : ''}`);
+    await addActivity(`Attendance saved: ${records.length} student(s) on ${date} — ${records.length} lesson(s) advanced${mlCount > 0 ? ', ' + mlCount + ' missed lesson(s) flagged' : ''}`);
     delete groupAttSelections[groupId];
     await renderGroups();
     await renderRoster();
