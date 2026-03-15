@@ -899,14 +899,19 @@
     const period = billingMonthInput.value;
     const [students, allPayments] = await Promise.all([getStudents(), getPayments()]);
 
-    // Filter payments for this month
-    const monthPayments = allPayments.filter(p => p.period === period);
+    // Filter payments for this month — match by period OR by payment date
+    const monthPayments = allPayments.filter(p => {
+      if (p.period === period) return true;
+      if (p.date && p.date.startsWith(period)) return true;
+      return false;
+    });
     const paidStudentIds = new Set(monthPayments.map(p => p.student_id));
+    const placedStudents = students.filter(s => s.status === 'Placed' || !s.status);
 
     // KPIs
     const totalCollected = monthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
     const paidCount = paidStudentIds.size;
-    const owedCount = students.length - paidCount;
+    const owedCount = placedStudents.filter(s => !paidStudentIds.has(s.id)).length;
 
     document.getElementById('payKpiCollected').textContent = '$' + totalCollected.toFixed(2);
     document.getElementById('payKpiPaid').textContent = paidCount;
@@ -916,14 +921,14 @@
     const body = document.getElementById('billingBody');
     const empty = document.getElementById('billingEmpty');
 
-    if (students.length === 0) {
+    if (placedStudents.length === 0) {
       body.innerHTML = '';
       empty.style.display = 'block';
     } else {
       empty.style.display = 'none';
 
       // Sort: unpaid first, then paid
-      const sorted = [...students].sort((a, b) => {
+      const sorted = [...placedStudents].sort((a, b) => {
         const aPaid = paidStudentIds.has(a.id);
         const bPaid = paidStudentIds.has(b.id);
         if (aPaid === bPaid) return a.name.localeCompare(b.name);
