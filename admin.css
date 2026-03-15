@@ -774,6 +774,89 @@ body {
   gap: 20px;
 }
 
+/* Pods grid */
+.pods-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.pod {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pod__header {
+  background: var(--green);
+  padding: 16px 20px;
+  color: var(--white);
+}
+
+.pod__teacher {
+  font-family: var(--font-h);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pod__info {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.pod__students {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.pod-student {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pod-student:last-child {
+  border-bottom: none;
+}
+
+.pod-student__name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pod-student__lesson {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.pod-student .att-status {
+  display: flex;
+  gap: 4px;
+}
+
+.pod-student .att-btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  min-width: 30px;
+}
+
+.pod__footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.pod__footer .save-att-btn {
+  width: 100%;
+}
+
 .group-card {
   background: var(--white);
   border-radius: var(--radius);

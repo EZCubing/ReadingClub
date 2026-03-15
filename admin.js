@@ -531,7 +531,7 @@
     const todayAtt = {};
     allAtt.filter(a => a.date === date).forEach(a => { todayAtt[a.student_id] = a.status; });
 
-    let html = '';
+    let html = '<div class="pods-grid">';
     groupKeys.forEach(key => {
       const [teacher, timeSlot, level] = key.split('||');
       const students = groupMap[key];
@@ -542,46 +542,36 @@
 
       const studentsHtml = students.map(s => {
         const existing = todayAtt[s.id] || null;
-        return `<tr>
-          <td><strong>${esc(s.name)}</strong></td>
-          <td>RM ${esc(s.level || '?')} — Lesson ${s.lesson || '?'}</td>
-          <td>
-            <div class="att-status">
-              <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setGroupAtt(this)">Present</button>
-              <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setGroupAtt(this)">Absent</button>
-              <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setGroupAtt(this)">Late</button>
+        return `
+          <div class="pod-student">
+            <div class="pod-student__info">
+              <div class="pod-student__name">${esc(s.name)}</div>
+              <div class="pod-student__lesson">Lesson ${s.lesson || '?'}</div>
             </div>
-          </td>
-        </tr>`;
+            <div class="att-status">
+              <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setGroupAtt(this)">P</button>
+              <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setGroupAtt(this)">A</button>
+              <button class="att-btn ${existing === 'L' ? 'selected-L' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="L" onclick="setGroupAtt(this)">L</button>
+            </div>
+          </div>`;
       }).join('');
 
-      const groupTitle = `${teacher} — RM ${level}`;
-
       html += `
-        <div class="group-card">
-          <div class="group-card__header">
-            <div>
-              <div class="group-card__title">${esc(groupTitle)}</div>
-              <div class="group-card__meta">
-                <span>${esc(students[0].student_group)}</span>
-                <span>${esc(timeSlot)}</span>
-                <span>${esc(students[0].club || 'Reading')}</span>
-                <span>${students.length} student(s)</span>
-              </div>
-            </div>
+        <div class="pod">
+          <div class="pod__header">
+            <div class="pod__teacher">${esc(teacher)}</div>
+            <div class="pod__info">RM ${esc(level)} &bull; ${esc(timeSlot)} &bull; ${students.length} students</div>
           </div>
-          <div class="group-card__body">
-            <table class="group-card__attendance">
-              <thead><tr><th>Student</th><th>Level / Lesson</th><th>Attendance</th></tr></thead>
-              <tbody>${studentsHtml}</tbody>
-            </table>
+          <div class="pod__students">
+            ${studentsHtml}
           </div>
-          <div class="group-card__footer">
+          <div class="pod__footer">
             <button class="save-att-btn" onclick="saveAutoGroupAttendance('${groupId}')">Save Attendance</button>
           </div>
         </div>
       `;
     });
+    html += '</div>';
 
     container.innerHTML = html;
   }
