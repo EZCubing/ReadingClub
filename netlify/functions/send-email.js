@@ -66,7 +66,7 @@ exports.handler = async (event) => {
                 <tr>
                   <td style="vertical-align: top; padding-right: 16px;">
                     <p style="margin: 0; font-size: 15px;"><strong style="color: #2E7D32;">Mrs. Jennifer Jaramillo</strong></p>
-                    <p style="margin: 4px 0 0; color: #888; font-size: 13px;">M.Ed. | Level 3 Teacher | 20+ Years Experience</p>
+                    <p style="margin: 4px 0 0; color: #888; font-size: 13px;">M.Ed. | Level III Teacher | 20+ Years Experience</p>
                     <p style="margin: 4px 0 0; color: #888; font-size: 13px;">Summer Reading &amp; Math Club</p>
                     <p style="margin: 8px 0 0; font-size: 13px;">
                       <a href="tel:5053068309" style="color: #4CAF50; text-decoration: none;">(505) 306-8309</a><br />
