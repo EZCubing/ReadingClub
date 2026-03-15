@@ -380,78 +380,79 @@
         </div>
       </div>
 
-      <!-- New Group Modal -->
-      <div class="modal" id="groupModal" style="display:none;">
-        <div class="modal__card">
-          <div class="modal__header">
-            <h3 id="groupModalTitle">New Group</h3>
-            <button class="modal__close" id="groupModalClose">&times;</button>
-          </div>
-          <form id="groupForm">
-            <input type="hidden" id="gId" />
-            <div class="form-grid">
-              <div class="field">
-                <label>Group Name</label>
-                <input type="text" id="gName" placeholder="e.g. Reading Group A" required />
-              </div>
-              <div class="field">
-                <label>Teacher</label>
-                <select id="gTeacher" required>
-                  <option value="">Select Teacher</option>
-                  <option value="Jennifer Jaramillo">Jennifer Jaramillo</option>
-                  <option value="Dale Jaramillo">Dale Jaramillo</option>
-                  <option value="Stephanie Brennen">Stephanie Brennen</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Schedule</label>
-                <select id="gSchedule" required>
-                  <option value="Mon/Wed">Monday / Wednesday</option>
-                  <option value="Tue/Thu">Tuesday / Thursday</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Time</label>
-                <select id="gTime" required>
-                  <option value="2:15-3:15 PM">2:15 - 3:15 PM</option>
-                  <option value="4:00-5:00 PM">4:00 - 5:00 PM</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Club</label>
-                <select id="gClub">
-                  <option value="Reading">Reading</option>
-                  <option value="Math">Math</option>
-                  <option value="Test Prep">Test Prep</option>
-                </select>
-              </div>
-              <div class="field">
-                <label>Max Students</label>
-                <input type="number" id="gMax" min="1" max="10" value="10" />
-              </div>
-            </div>
-            <div class="modal__actions">
-              <button type="button" class="btn btn--outline-dark" id="groupCancelBtn">Cancel</button>
-              <button type="submit" class="btn btn--primary">Save Group</button>
-            </div>
-          </form>
-        </div>
-      </div>
+    </div>
 
-      <!-- Assign Students to Group Modal -->
-      <div class="modal" id="assignModal" style="display:none;">
-        <div class="modal__card">
-          <div class="modal__header">
-            <h3 id="assignModalTitle">Assign Students</h3>
-            <button class="modal__close" id="assignModalClose">&times;</button>
+    <!-- Group Modal (outside panel) -->
+    <div class="modal" id="groupModal" style="display:none;">
+      <div class="modal__card">
+        <div class="modal__header">
+          <h3 id="groupModalTitle">New Group</h3>
+          <button class="modal__close" id="groupModalClose">&times;</button>
+        </div>
+        <form id="groupForm">
+          <input type="hidden" id="gId" />
+          <div class="form-grid">
+            <div class="field">
+              <label>Group Name</label>
+              <input type="text" id="gName" placeholder="e.g. Reading Group A" required />
+            </div>
+            <div class="field">
+              <label>Teacher</label>
+              <select id="gTeacher" required>
+                <option value="">Select Teacher</option>
+                <option value="Dale Jaramillo">Dale Jaramillo</option>
+                <option value="Jennifer Jaramillo">Jennifer Jaramillo</option>
+                <option value="Stephanie Brennen">Stephanie Brennen</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Schedule</label>
+              <select id="gSchedule" required>
+                <option value="Mon/Wed">Monday / Wednesday</option>
+                <option value="Tue/Thu">Tuesday / Thursday</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Time</label>
+              <select id="gTime" required>
+                <option value="2:15-3:15 PM">2:15 - 3:15 PM</option>
+                <option value="4:00-5:00 PM">4:00 - 5:00 PM</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Club</label>
+              <select id="gClub">
+                <option value="Reading">Reading</option>
+                <option value="Math">Math</option>
+                <option value="Test Prep">Test Prep</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Max Students</label>
+              <input type="number" id="gMax" min="1" max="10" value="10" />
+            </div>
           </div>
-          <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:8px;">Select students for this group. Only showing students on the matching schedule.</p>
-          <p class="assign-counter" id="assignCounter">0 / 10 spots filled</p>
-          <div id="assignStudentList" class="assign-list"></div>
           <div class="modal__actions">
-            <button type="button" class="btn btn--outline-dark" id="assignCancelBtn">Cancel</button>
-            <button type="button" class="btn btn--primary" id="assignSaveBtn">Save Assignments</button>
+            <button type="button" class="btn btn--outline-dark" id="groupCancelBtn">Cancel</button>
+            <button type="submit" class="btn btn--primary">Save Group</button>
           </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Assign Students Modal (outside panel) -->
+    <div class="modal" id="assignModal" style="display:none;">
+      <div class="modal__card">
+        <div class="modal__header">
+          <h3 id="assignModalTitle">Assign Students</h3>
+          <button class="modal__close" id="assignModalClose">&times;</button>
+        </div>
+        <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:8px;">Select students for this group. Only showing students on the matching schedule.</p>
+        <p class="assign-counter" id="assignCounter">0 / 10 spots filled</p>
+        <div id="assignStudentList" class="assign-list"></div>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--outline-dark" id="assignCancelBtn">Cancel</button>
+          <button type="button" class="btn btn--primary" id="assignSaveBtn">Save Assignments</button>
         </div>
       </div>
     </div>
