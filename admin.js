@@ -619,14 +619,8 @@
     const placed = allStudents.filter(s => s.status === 'Placed' || !s.status);
     const teacherFilter = groupTeacherFilter.value;
 
-    // Filter students by schedule
-    let dayStudents;
-    if (schedFilter === 'Monday') {
-      // Monday shows Monday-only AND Mon/Wed students
-      dayStudents = placed.filter(s => s.student_group === 'Monday' || s.student_group === 'Mon/Wed');
-    } else {
-      dayStudents = placed.filter(s => s.student_group === schedFilter);
-    }
+    // Filter students by schedule — strict match only
+    let dayStudents = placed.filter(s => s.student_group === schedFilter);
 
     // Filter by teacher
     if (teacherFilter) dayStudents = dayStudents.filter(s => s.teacher === teacherFilter);
