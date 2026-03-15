@@ -137,15 +137,17 @@
         <p class="empty-state" id="studentsEmpty">No students yet. Click "+ New Student" to get started.</p>
       </div>
 
-      <!-- Add/Edit Student Modal -->
-      <div class="modal" id="studentModal" style="display:none;">
-        <div class="modal__card modal__card--wide">
-          <div class="modal__header">
-            <h3 id="studentModalTitle">New Student</h3>
-            <button class="modal__close" id="studentModalClose">&times;</button>
-          </div>
-          <form id="studentForm">
-            <input type="hidden" id="studentId" />
+    </div>
+
+    <!-- Student Modal (outside panels so it works from any tab) -->
+    <div class="modal" id="studentModal" style="display:none;">
+      <div class="modal__card modal__card--wide">
+        <div class="modal__header">
+          <h3 id="studentModalTitle">New Student</h3>
+          <button class="modal__close" id="studentModalClose">&times;</button>
+        </div>
+        <form id="studentForm">
+          <input type="hidden" id="studentId" />
 
             <!-- Stage selector -->
             <div class="field" style="margin-bottom:20px;">
@@ -268,7 +270,6 @@
           </form>
         </div>
       </div>
-    </div>
 
     <!-- ===== CURRENT STUDENTS TAB ===== -->
     <div class="dash-panel" id="panel-roster">
