@@ -50,7 +50,7 @@
       <button class="dash-tab" data-tab="roster">Current Students</button>
       <button class="dash-tab" data-tab="attendance">Attendance</button>
       <button class="dash-tab" data-tab="payments">Payments</button>
-      <button class="dash-tab" data-tab="cohorts">Cohorts</button>
+      <button class="dash-tab" data-tab="cohorts">Groups</button>
     </nav>
 
     <!-- ===== OVERVIEW TAB ===== -->
@@ -490,27 +490,27 @@
     <!-- ===== COHORTS TAB ===== -->
     <div class="dash-panel" id="panel-cohorts">
       <div class="panel-header">
-        <h3>Monthly Cohorts</h3>
-        <button class="btn btn--primary btn--sm" id="addCohortBtn">+ New Cohort</button>
+        <h3>Groups</h3>
+        <button class="btn btn--primary btn--sm" id="addCohortBtn">+ New Group</button>
       </div>
 
       <!-- Cohort Cards -->
       <div class="cohort-list" id="cohortList">
-        <p class="empty-state" id="cohortsEmpty">No cohorts yet. Click "+ New Cohort" to create one.</p>
+        <p class="empty-state" id="cohortsEmpty">No groups yet. Click "+ New Group" to create one.</p>
       </div>
 
       <!-- New Cohort Modal -->
       <div class="modal" id="cohortModal" style="display:none;">
         <div class="modal__card">
           <div class="modal__header">
-            <h3 id="cohortModalTitle">New Cohort</h3>
+            <h3 id="cohortModalTitle">New Group</h3>
             <button class="modal__close" id="cohortModalClose">&times;</button>
           </div>
           <form id="cohortForm">
             <input type="hidden" id="cohortId" />
             <div class="form-grid">
               <div class="field">
-                <label>Cohort Name</label>
+                <label>Group Name</label>
                 <input type="text" id="cName" placeholder="e.g. June 2026 Reading Group A" required />
               </div>
               <div class="field">

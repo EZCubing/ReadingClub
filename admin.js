@@ -794,7 +794,7 @@
   }
 
   document.getElementById('addCohortBtn').addEventListener('click', () => {
-    document.getElementById('cohortModalTitle').textContent = 'New Cohort';
+    document.getElementById('cohortModalTitle').textContent = 'New Group';
     cohortForm.reset();
     document.getElementById('cohortId').value = '';
     document.getElementById('cMaxStudents').value = '10';
@@ -825,11 +825,11 @@
     if (id) {
       const { error } = await supabase.from('cohorts').update(cohort).eq('id', id);
       if (error) { alert('Error updating cohort: ' + error.message); return; }
-      await addActivity(`Updated cohort: ${cohort.name} (Teacher: ${cohort.teacher})`);
+      await addActivity(`Updated group: ${cohort.name} (Teacher: ${cohort.teacher})`);
     } else {
       const { error } = await supabase.from('cohorts').insert(cohort);
       if (error) { alert('Error creating cohort: ' + error.message); return; }
-      await addActivity(`Created cohort: ${cohort.name} (Teacher: ${cohort.teacher})`);
+      await addActivity(`Created group: ${cohort.name} (Teacher: ${cohort.teacher})`);
     }
 
     cohortModal.style.display = 'none';
@@ -901,7 +901,7 @@
     const cohorts = await getCohorts();
     const c = cohorts.find(x => x.id === id);
     if (!c) return;
-    document.getElementById('cohortModalTitle').textContent = 'Edit Cohort';
+    document.getElementById('cohortModalTitle').textContent = 'Edit Group';
     document.getElementById('cohortId').value = c.id;
     document.getElementById('cName').value = c.name || '';
     document.getElementById('cTeacher').value = c.teacher || '';
@@ -916,10 +916,10 @@
   };
 
   window.deleteCohort = async function(id) {
-    if (!confirm('Delete this cohort and all its student assignments?')) return;
+    if (!confirm('Delete this group and all its student assignments?')) return;
     const { error } = await supabase.from('cohorts').delete().eq('id', id);
     if (error) { alert('Error deleting: ' + error.message); return; }
-    await addActivity('Deleted a cohort');
+    await addActivity('Deleted a group');
     await refreshAll();
   };
 
@@ -928,7 +928,7 @@
     currentAssignMax = maxStudents || 10;
     const cohorts = await getCohorts();
     const cohort = cohorts.find(c => c.id === cohortId);
-    document.getElementById('assignModalTitle').textContent = `Assign Students to ${cohort ? cohort.name : 'Cohort'}`;
+    document.getElementById('assignModalTitle').textContent = `Assign Students to ${cohort ? cohort.name : 'Group'}`;
 
     const students = await getStudents();
     const assigned = await getCohortStudents(cohortId);
@@ -994,7 +994,7 @@
       if (error) { alert('Error assigning students: ' + error.message); return; }
     }
 
-    await addActivity(`Updated cohort assignments (${selectedIds.length} / ${currentAssignMax} students)`);
+    await addActivity(`Updated group assignments (${selectedIds.length} / ${currentAssignMax} students)`);
     assignModal.style.display = 'none';
     await refreshAll();
   });
