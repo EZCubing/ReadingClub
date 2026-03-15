@@ -855,7 +855,7 @@
     document.getElementById('pStudentId').value = studentId;
     document.getElementById('pStudentName').value = studentName;
     document.getElementById('payStudentDisplay').textContent = studentName;
-    document.getElementById('payModalTitle').textContent = 'Mark Payment';
+    document.getElementById('payModalTitle').textContent = 'Add Payment';
     document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('pMethod').value = '';
     paymentModal.style.display = 'flex';
@@ -936,30 +936,21 @@
       });
 
       body.innerHTML = sorted.map(s => {
-        const payment = monthPayments.find(p => p.student_id === s.id);
-        const isPaid = !!payment;
+        const studentPayments = monthPayments.filter(p => p.student_id === s.id);
+        const totalPaid = studentPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+        const lastPayment = studentPayments.length > 0 ? studentPayments[0] : null;
 
-        if (isPaid) {
-          return `<tr>
-            <td><strong>${esc(s.name)}</strong></td>
-            <td>${esc(s.club)}</td>
-            <td><span class="billing-status paid">Paid</span></td>
-            <td>${esc(payment.date)}</td>
-            <td>$${parseFloat(payment.amount).toFixed(2)}</td>
-            <td>${esc(payment.method)}</td>
-            <td><button class="undo-btn" onclick="undoPayment('${payment.id}')">Undo</button></td>
-          </tr>`;
-        } else {
-          return `<tr>
-            <td><strong>${esc(s.name)}</strong></td>
-            <td>${esc(s.club)}</td>
-            <td><span class="billing-status unpaid">Unpaid</span></td>
-            <td>—</td>
-            <td>—</td>
-            <td>—</td>
-            <td><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Mark Paid</button></td>
-          </tr>`;
-        }
+        const paymentsDetail = studentPayments.map(p =>
+          `<div style="font-size:0.78rem;color:var(--text-light);">${esc(p.date)} — $${parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</div>`
+        ).join('');
+
+        return `<tr>
+          <td><strong>${esc(s.name)}</strong></td>
+          <td>${esc(s.club)}</td>
+          <td>${totalPaid > 0 ? `<span class="billing-status paid">$${totalPaid.toFixed(2)}</span>` : '<span class="billing-status unpaid">$0.00</span>'}</td>
+          <td>${paymentsDetail || '—'}</td>
+          <td><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
+        </tr>`;
       }).join('');
     }
 
