@@ -18,9 +18,10 @@
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       </div>
       <h1>Reading Club Admin</h1>
-      <p>Enter your password to access the dashboard.</p>
+      <p>Sign in with your username and password.</p>
       <form id="loginForm">
-        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" />
+        <input type="text" id="loginUsername" placeholder="Username" autocomplete="username" required />
+        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password" required />
         <button type="submit" class="btn btn--primary">Log In</button>
       </form>
       <p class="login__error" id="loginError"></p>
@@ -38,6 +39,7 @@
         <span class="topbar__label">Admin Dashboard</span>
       </div>
       <div class="topbar__right">
+        <span class="topbar__user" id="topbarUser"></span>
         <a href="index.html" class="topbar__link">Website</a>
         <button class="topbar__logout" id="logoutBtn">Log Out</button>
       </div>

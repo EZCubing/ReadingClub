@@ -7,9 +7,6 @@
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ===== ADMIN PASSWORD =====
-  const ADMIN_HASH = 'e9b0a665cfc6af5981d93cab75f2770ab5c0b640b3d7682f7688ff5420a28f20';
-
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -51,10 +48,14 @@
   const loginError = document.getElementById('loginError');
   const TIMEOUT_MINUTES = 10;
   let inactivityTimer = null;
+  let failedAttempts = 0;
+  let lockoutUntil = 0;
 
   function logout() {
     sessionStorage.removeItem('rc_auth');
     sessionStorage.removeItem('rc_auth_time');
+    sessionStorage.removeItem('rc_user');
+    sessionStorage.removeItem('rc_role');
     location.reload();
   }
 
@@ -64,17 +65,17 @@
       alert('You have been logged out due to inactivity.');
       logout();
     }, TIMEOUT_MINUTES * 60 * 1000);
-    // Update last activity time
     sessionStorage.setItem('rc_auth_time', Date.now().toString());
   }
 
   function isSessionValid() {
     if (sessionStorage.getItem('rc_auth') !== '1') return false;
     const authTime = parseInt(sessionStorage.getItem('rc_auth_time') || '0');
-    // Session expires after 10 minutes of no activity
     if (Date.now() - authTime > TIMEOUT_MINUTES * 60 * 1000) {
       sessionStorage.removeItem('rc_auth');
       sessionStorage.removeItem('rc_auth_time');
+      sessionStorage.removeItem('rc_user');
+      sessionStorage.removeItem('rc_role');
       return false;
     }
     return true;
@@ -87,14 +88,19 @@
     resetInactivityTimer();
   }
 
+  function showLoggedInUser() {
+    const user = sessionStorage.getItem('rc_user') || '';
+    document.getElementById('topbarUser').textContent = user;
+  }
+
   // Check session on page load
   if (isSessionValid()) {
     loginScreen.style.display = 'none';
     dashboard.style.display = 'block';
+    showLoggedInUser();
     startSecurityListeners();
     initDashboard();
   } else {
-    // Force login screen even if someone tries to navigate directly
     sessionStorage.removeItem('rc_auth');
     loginScreen.style.display = 'flex';
     dashboard.style.display = 'none';
@@ -102,19 +108,46 @@
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Check lockout
+    if (Date.now() < lockoutUntil) {
+      const mins = Math.ceil((lockoutUntil - Date.now()) / 60000);
+      loginError.textContent = `Too many failed attempts. Try again in ${mins} minute(s).`;
+      return;
+    }
+
+    const username = document.getElementById('loginUsername').value.trim().toLowerCase();
     const pw = document.getElementById('loginPassword').value;
     const hash = await sha256(pw);
-    if (hash === ADMIN_HASH) {
-      sessionStorage.setItem('rc_auth', '1');
-      sessionStorage.setItem('rc_auth_time', Date.now().toString());
-      loginScreen.style.display = 'none';
-      dashboard.style.display = 'block';
-      startSecurityListeners();
-      initDashboard();
-    } else {
-      loginError.textContent = 'Incorrect password. Try again.';
+
+    // Verify against Supabase
+    const { data, error } = await supabase.rpc('verify_login', { p_username: username, p_password_hash: hash });
+
+    if (error || !data || data.length === 0) {
+      failedAttempts++;
+      if (failedAttempts >= 5) {
+        lockoutUntil = Date.now() + 15 * 60 * 1000;
+        loginError.textContent = 'Too many failed attempts. Locked for 15 minutes.';
+      } else {
+        loginError.textContent = `Incorrect username or password. (${5 - failedAttempts} attempts remaining)`;
+      }
       document.getElementById('loginPassword').value = '';
+      return;
     }
+
+    // Login success
+    const user = data[0];
+    failedAttempts = 0;
+    sessionStorage.setItem('rc_auth', '1');
+    sessionStorage.setItem('rc_auth_time', Date.now().toString());
+    sessionStorage.setItem('rc_user', user.display_name);
+    sessionStorage.setItem('rc_role', user.role);
+    loginScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+    showLoggedInUser();
+    startSecurityListeners();
+    await addActivity(`${user.display_name} logged in`);
+    initDashboard();
   });
 
   document.getElementById('logoutBtn').addEventListener('click', () => {

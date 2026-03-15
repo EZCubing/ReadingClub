@@ -69,6 +69,7 @@ body {
   gap: 12px;
 }
 
+.login__card input[type="text"],
 .login__card input[type="password"] {
   padding: 14px 16px;
   border: 2px solid var(--border);
@@ -197,6 +198,15 @@ body {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.topbar__user {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--green-dark);
+  background: var(--green-pale);
+  padding: 5px 12px;
+  border-radius: 20px;
 }
 
 .topbar__logout:hover {
