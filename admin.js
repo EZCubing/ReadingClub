@@ -477,9 +477,16 @@
     });
   });
 
+  // Missed lessons helper
+  async function getMissedLessons() {
+    const { data, error } = await supabase.from('missed_lessons').select('*').eq('completed', false).order('created_at', { ascending: false });
+    if (error) { console.error('Error fetching missed lessons:', error); return []; }
+    return data || [];
+  }
+
   // Auto-generate groups from student data
   async function renderGroups() {
-    const [allStudents, allAtt] = await Promise.all([getStudents(), getAttendance()]);
+    const [allStudents, allAtt, missedLessons] = await Promise.all([getStudents(), getAttendance(), getMissedLessons()]);
     const container = document.getElementById('groupCards');
     const empty = document.getElementById('groupsEmpty');
     const date = groupDateInput.value;
@@ -527,9 +534,16 @@
 
       const studentsHtml = students.map(s => {
         const existing = todayAtt[s.id] || null;
+        const studentML = missedLessons.filter(ml => ml.student_id === s.id);
+        const mlHtml = studentML.map(ml =>
+          `<span class="ml-badge">ML Lesson ${ml.lesson} <button class="ml-complete-btn" onclick="completeMissedLesson('${ml.id}')">Complete</button></span>`
+        ).join('');
         return `
           <div class="pod-student">
-            <div class="pod-student__name">${esc(s.name)}</div>
+            <div class="pod-student__info">
+              <div class="pod-student__name">${esc(s.name)}</div>
+              ${mlHtml ? '<div class="pod-student__ml">' + mlHtml + '</div>' : ''}
+            </div>
             <div class="att-status">
               <button class="att-btn ${existing === 'P' ? 'selected-P' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="P" onclick="setGroupAtt(this)">P</button>
               <button class="att-btn ${existing === 'A' ? 'selected-A' : ''}" data-group="${groupId}" data-student="${s.id}" data-name="${esc(s.name)}" data-club="${esc(s.club)}" data-status="A" onclick="setGroupAtt(this)">A</button>
@@ -597,13 +611,34 @@
       }
     }
 
+    // Create missed lesson records for absent students
+    const absentStudents = records.filter(r => r.status === 'A');
+    for (const r of absentStudents) {
+      const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
+      const missedLesson = student && student.lesson ? student.lesson : 0;
+      await supabase.from('missed_lessons').insert({
+        student_id: r.student_id,
+        student_name: r.student_name,
+        lesson: missedLesson,
+        date: date,
+      });
+    }
+
     const advancedCount = presentStudents.length;
-    await addActivity(`Attendance saved: ${records.length} student(s) on ${date}${advancedCount > 0 ? ' — ' + advancedCount + ' lesson(s) advanced' : ''}`);
+    const mlCount = absentStudents.length;
+    await addActivity(`Attendance saved: ${records.length} student(s) on ${date}${advancedCount > 0 ? ' — ' + advancedCount + ' advanced' : ''}${mlCount > 0 ? ' — ' + mlCount + ' missed lesson(s)' : ''}`);
     delete groupAttSelections[groupId];
     await renderGroups();
     await renderRoster();
     await renderOverview();
     alert(`Attendance saved for ${records.length} student(s).${advancedCount > 0 ? ' ' + advancedCount + ' student(s) advanced to next lesson.' : ''}`);
+  };
+
+  window.completeMissedLesson = async function(id) {
+    const { error } = await supabase.from('missed_lessons').update({ completed: true }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity('Missed lesson marked complete');
+    await renderGroups();
   };
 
   // History
