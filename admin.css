@@ -809,6 +809,15 @@ body {
   color: var(--white);
 }
 
+.pod--dale .pod__header { background: #1E88E5; }
+.pod--dale { border-top: 4px solid #1E88E5; }
+
+.pod--jennifer .pod__header { background: #E91E8A; }
+.pod--jennifer { border-top: 4px solid #E91E8A; }
+
+.pod--stephanie .pod__header { background: #FB8C00; }
+.pod--stephanie { border-top: 4px solid #FB8C00; }
+
 .pod__teacher {
   font-family: var(--font-h);
   font-size: 1.1rem;

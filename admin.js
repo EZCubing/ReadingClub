@@ -638,8 +638,10 @@
           </div>`;
       }).join('');
 
+      const teacherClass = teacher.includes('Dale') ? 'pod--dale' : teacher.includes('Jennifer') ? 'pod--jennifer' : teacher.includes('Stephanie') ? 'pod--stephanie' : '';
+
       html += `
-        <div class="pod">
+        <div class="pod ${teacherClass}">
           <div class="pod__header">
             <div class="pod__teacher">${esc(teacher)}</div>
             <div class="pod__info">RM ${esc(level)} &bull; Lesson ${esc(lesson)} &bull; ${esc(timeSlot)} &bull; ${students.length} student(s)</div>
