@@ -487,8 +487,8 @@
 
     const placed = allStudents.filter(s => s.status === 'Placed' || !s.status);
 
-    // Filter students by schedule
-    let dayStudents = schedFilter ? placed.filter(s => s.student_group === schedFilter) : placed;
+    // Filter students strictly by schedule — only show matching group
+    let dayStudents = placed.filter(s => s.student_group === schedFilter);
 
     // Group students by: teacher + time_slot + level
     const groupMap = {};
