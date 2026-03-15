@@ -21,6 +21,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         from: 'Jennifer Jaramillo <jennifer@jointhereadingclub.com>',
+        reply_to: 'dj.jaramillo99@gmail.com',
         to: parentEmail,
         subject: `Thank you for registering ${childName} for Reading Club!`,
         html: `
