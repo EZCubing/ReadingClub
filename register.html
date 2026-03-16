@@ -299,7 +299,7 @@
         const { error } = await supabase.from('students').insert(student);
 
         if (error) {
-          errorEl.textContent = 'Something went wrong. Please try again or call (505) 306-8309.';
+          errorEl.textContent = 'Something went wrong. Please try again later.';
           errorEl.style.display = 'block';
           submitBtn.disabled = false;
           submitBtn.textContent = 'Submit Registration';
