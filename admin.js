@@ -1055,9 +1055,9 @@
     if (error) { alert('Error recording payment: ' + error.message); return; }
 
     await addActivity(`Payment: $${amount.toFixed(2)} from ${studentName} via ${method} for ${monthLabel}`);
-    await openPaymentModal(studentId);
     await renderPayments();
     await renderOverview();
+    await openPaymentModal(studentId);
   });
 
   async function renderPayments() {
@@ -1349,9 +1349,10 @@
     const { error } = await supabase.from('payments').update({ amount }).eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity(`Corrected payment to $${amount.toFixed(2)}`);
+    await renderPayments();
+    await renderOverview();
     const sid = document.getElementById('pStudentId').value;
     await openPaymentModal(sid);
-    await renderPayments();
   };
 
   window.deletePaymentInline = async function(id, studentId) {
@@ -1359,8 +1360,9 @@
     const { error } = await supabase.from('payments').delete().eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity('Deleted a payment');
-    await openPaymentModal(studentId);
     await renderPayments();
+    await renderOverview();
+    await openPaymentModal(studentId);
   };
 
   // ===== COSTS =====
