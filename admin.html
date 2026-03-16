@@ -480,84 +480,89 @@
         </div>
       </div>
 
-      <!-- Mark Paid Modal -->
+      <!-- Combined Payment Modal -->
       <div class="modal" id="paymentModal" style="display:none;">
-        <div class="modal__card">
+        <div class="modal__card modal__card--wide">
           <div class="modal__header">
-            <h3 id="payModalTitle">Add Payment</h3>
+            <h3 id="payModalTitle">Edit Payment</h3>
             <button class="modal__close" id="paymentModalClose">&times;</button>
           </div>
-          <form id="paymentForm">
-            <input type="hidden" id="pStudentId" />
-            <input type="hidden" id="pStudentName" />
-            <div class="pay-student-name" id="payStudentDisplay"></div>
+          <input type="hidden" id="pStudentId" />
+          <input type="hidden" id="pStudentName" />
+          <div class="pay-student-name" id="payStudentDisplay"></div>
+
+          <!-- Rate & Discount Section -->
+          <div class="form-section">
+            <h4 class="form-section__title">Monthly Rate &amp; Discount</h4>
+            <div class="field">
+              <label>Discount</label>
+              <div class="discount-btns" id="rateDiscountBtns">
+                <button type="button" class="discount-btn" data-discount="None">None</button>
+                <button type="button" class="discount-btn" data-discount="Military">Military</button>
+                <button type="button" class="discount-btn" data-discount="Family">Family</button>
+                <button type="button" class="discount-btn" data-discount="Teacher">Teacher</button>
+                <button type="button" class="discount-btn" data-discount="Other">Other</button>
+              </div>
+            </div>
+            <div class="field" id="rOtherField" style="display:none;">
+              <label>Custom Discount (%)</label>
+              <input type="number" id="rOtherPercent" min="0" max="100" step="1" placeholder="e.g. 15" />
+            </div>
             <div class="form-grid">
               <div class="field">
-                <label>Amount ($)</label>
-                <input type="number" id="pAmount" step="0.01" min="0" required />
+                <label>Monthly Rate ($)</label>
+                <input type="number" id="rMonthlyRate" step="0.01" min="0" required />
               </div>
               <div class="field">
-                <label>Date Paid</label>
-                <input type="date" id="pDate" required />
+                <label>Status</label>
+                <div id="payStatusDisplay" style="padding:10px 0;font-weight:600;"></div>
               </div>
             </div>
-            <div class="field">
-              <label>Payment Method</label>
-              <div class="pay-methods" id="payMethods">
-                <button type="button" class="pay-method-btn" data-method="Cash">Cash</button>
-                <button type="button" class="pay-method-btn" data-method="Check">Check</button>
-                <button type="button" class="pay-method-btn" data-method="Zelle">Zelle</button>
-                <button type="button" class="pay-method-btn" data-method="Venmo">Venmo</button>
-                <button type="button" class="pay-method-btn" data-method="Free">Free</button>
-              </div>
-              <input type="hidden" id="pMethod" value="" />
-            </div>
-            <div class="field">
-              <label>Notes (optional)</label>
-              <textarea id="pNotes" rows="2"></textarea>
-            </div>
-            <div class="modal__actions">
-              <button type="button" class="btn btn--outline-dark" id="paymentCancelBtn">Cancel</button>
-              <button type="submit" class="btn btn--primary">Save Payment</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+            <button type="button" class="btn btn--primary btn--sm" id="saveRateBtn">Save Rate</button>
+          </div>
 
-    <!-- Rate Editor Modal -->
-    <div class="modal" id="rateModal" style="display:none;">
-      <div class="modal__card" style="max-width:420px;">
-        <div class="modal__header">
-          <h3 id="rateModalTitle">Edit Rate</h3>
-          <button class="modal__close" id="rateModalClose">&times;</button>
+          <!-- Existing Payments This Month -->
+          <div class="form-section">
+            <h4 class="form-section__title">Payments This Month</h4>
+            <div id="existingPayments"></div>
+          </div>
+
+          <!-- Add New Payment -->
+          <div class="form-section">
+            <h4 class="form-section__title">Add New Payment</h4>
+            <form id="paymentForm">
+              <div class="form-grid">
+                <div class="field">
+                  <label>Amount ($)</label>
+                  <input type="number" id="pAmount" step="0.01" min="0" required />
+                </div>
+                <div class="field">
+                  <label>Date Paid</label>
+                  <input type="date" id="pDate" required />
+                </div>
+              </div>
+              <div class="field">
+                <label>Payment Method</label>
+                <div class="pay-methods" id="payMethods">
+                  <button type="button" class="pay-method-btn" data-method="Cash">Cash</button>
+                  <button type="button" class="pay-method-btn" data-method="Check">Check</button>
+                  <button type="button" class="pay-method-btn" data-method="Zelle">Zelle</button>
+                  <button type="button" class="pay-method-btn" data-method="Venmo">Venmo</button>
+                  <button type="button" class="pay-method-btn" data-method="Free">Free</button>
+                </div>
+                <input type="hidden" id="pMethod" value="" />
+              </div>
+              <div class="field">
+                <label>Notes (optional)</label>
+                <textarea id="pNotes" rows="2"></textarea>
+              </div>
+              <div class="modal__actions">
+                <button type="button" class="btn btn--outline-dark" id="paymentCancelBtn">Close</button>
+                <button type="submit" class="btn btn--primary">Save Payment</button>
+              </div>
+            </form>
+          </div>
         </div>
-        <form id="rateForm">
-          <input type="hidden" id="rStudentId" />
-          <div class="pay-student-name" id="rateStudentDisplay"></div>
-          <div class="field">
-            <label>Discount</label>
-            <div class="discount-btns" id="rateDiscountBtns">
-              <button type="button" class="discount-btn" data-discount="None">None</button>
-              <button type="button" class="discount-btn" data-discount="Military">Military</button>
-              <button type="button" class="discount-btn" data-discount="Family">Family</button>
-              <button type="button" class="discount-btn" data-discount="Teacher">Teacher</button>
-              <button type="button" class="discount-btn" data-discount="Other">Other</button>
-            </div>
-          </div>
-          <div class="field" id="rOtherField" style="display:none;">
-            <label>Custom Discount (%)</label>
-            <input type="number" id="rOtherPercent" min="0" max="100" step="1" placeholder="e.g. 15" />
-          </div>
-          <div class="field">
-            <label>Monthly Rate ($)</label>
-            <input type="number" id="rMonthlyRate" step="0.01" min="0" required />
-          </div>
-          <div class="modal__actions">
-            <button type="button" class="btn btn--outline-dark" id="rateCancelBtn">Cancel</button>
-            <button type="submit" class="btn btn--primary">Save</button>
-          </div>
-        </form>
       </div>
     </div>
 

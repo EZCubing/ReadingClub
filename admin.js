@@ -1018,16 +1018,11 @@
 
   // Open mark-paid modal for a specific student
   window.markPaid = function(studentId, studentName) {
-    paymentForm.reset();
-    selectedPayMethod = '';
-    document.querySelectorAll('.pay-method-btn').forEach(b => b.classList.remove('selected'));
-    document.getElementById('pStudentId').value = studentId;
-    document.getElementById('pStudentName').value = studentName;
-    document.getElementById('payStudentDisplay').textContent = studentName;
-    document.getElementById('payModalTitle').textContent = 'Add Payment';
-    document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
-    document.getElementById('pMethod').value = '';
-    paymentModal.style.display = 'flex';
+    openPaymentModal(studentId);
+  };
+
+  window.editRate = function(studentId) {
+    openPaymentModal(studentId);
   };
 
   document.getElementById('paymentModalClose').addEventListener('click', () => paymentModal.style.display = 'none');
@@ -1060,8 +1055,9 @@
     if (error) { alert('Error recording payment: ' + error.message); return; }
 
     await addActivity(`Payment: $${amount.toFixed(2)} from ${studentName} via ${method} for ${monthLabel}`);
-    paymentModal.style.display = 'none';
-    await refreshAll();
+    await openPaymentModal(studentId);
+    await renderPayments();
+    await renderOverview();
   });
 
   async function renderPayments() {
@@ -1163,7 +1159,7 @@
           <td>${owedDisplay}</td>
           <td>${statusHtml}</td>
           <td>${paymentsDetail || '-'}</td>
-          <td style="display:flex;gap:6px;"><button onclick="editRate('${s.id}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
+          <td><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Edit Payment</button></td>
         </tr>`;
       }).join('');
     }
@@ -1224,15 +1220,10 @@
 
 
 
-  // ===== RATE EDITOR MODAL =====
-  const rateModal = document.getElementById('rateModal');
-  const rateForm = document.getElementById('rateForm');
+  // ===== COMBINED PAYMENT MODAL =====
   const RATE_BASE = 200;
 
-  document.getElementById('rateModalClose').addEventListener('click', () => rateModal.style.display = 'none');
-  document.getElementById('rateCancelBtn').addEventListener('click', () => rateModal.style.display = 'none');
-
-  // Discount buttons in rate modal
+  // Discount buttons
   document.querySelectorAll('#rateDiscountBtns .discount-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#rateDiscountBtns .discount-btn').forEach(b => b.classList.remove('selected'));
@@ -1258,16 +1249,51 @@
     document.getElementById('rMonthlyRate').value = (RATE_BASE * (1 - pct / 100)).toFixed(2);
   });
 
-  window.editRate = async function(studentId) {
+  // Save rate button
+  document.getElementById('saveRateBtn').addEventListener('click', async () => {
+    const id = document.getElementById('pStudentId').value;
+    const rate = parseFloat(document.getElementById('rMonthlyRate').value) || RATE_BASE;
+    const selectedBtn = document.querySelector('#rateDiscountBtns .discount-btn.selected');
+    const discount = selectedBtn ? selectedBtn.dataset.discount : 'None';
+    const { error } = await supabase.from('students').update({ monthly_rate: rate, discount }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    document.getElementById('saveRateBtn').textContent = 'Saved!';
+    setTimeout(() => { document.getElementById('saveRateBtn').textContent = 'Save Rate'; }, 1500);
+    await openPaymentModal(id);
+    await renderPayments();
+  });
+
+  async function openPaymentModal(studentId) {
     const students = await getStudents();
     const s = students.find(st => st.id === studentId);
     if (!s) return;
-    document.getElementById('rStudentId').value = s.id;
-    document.getElementById('rateStudentDisplay').textContent = s.name;
-    document.getElementById('rMonthlyRate').value = s.monthly_rate || RATE_BASE;
+
+    const allPayments = await getPayments();
+    const period = document.getElementById('billingMonth').value;
+    const monthPayments = allPayments.filter(p => p.student_id === s.id && p.billing_month === period);
+    const totalPaid = monthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    const rate = parseFloat(s.monthly_rate) || RATE_BASE;
+    const remaining = Math.max(0, rate - totalPaid);
+
+    // Set fields
+    document.getElementById('pStudentId').value = s.id;
+    document.getElementById('pStudentName').value = s.name;
+    document.getElementById('payStudentDisplay').textContent = s.name;
+    document.getElementById('payModalTitle').textContent = 'Edit Payment - ' + s.name;
+    document.getElementById('rMonthlyRate').value = rate;
     document.getElementById('rOtherPercent').value = '';
     document.getElementById('rOtherField').style.display = 'none';
-    // Set discount button
+
+    // Status display
+    const hasFree = monthPayments.some(p => p.method === 'Free');
+    let statusText, statusColor;
+    if (hasFree) { statusText = 'Free'; statusColor = '#1565C0'; }
+    else if (totalPaid >= rate) { statusText = 'Paid'; statusColor = '#2E7D32'; }
+    else if (totalPaid > 0) { statusText = `Partially Paid - $${remaining.toFixed(2)} remaining`; statusColor = '#E65100'; }
+    else { statusText = `Unpaid - $${rate.toFixed(2)} owed`; statusColor = '#e53935'; }
+    document.getElementById('payStatusDisplay').innerHTML = `<span style="color:${statusColor};">${statusText}</span>`;
+
+    // Discount buttons
     const disc = s.discount || 'None';
     document.querySelectorAll('#rateDiscountBtns .discount-btn').forEach(b => b.classList.remove('selected'));
     const match = document.querySelector(`#rateDiscountBtns .discount-btn[data-discount="${disc}"]`);
@@ -1277,21 +1303,57 @@
     } else {
       document.querySelector('#rateDiscountBtns .discount-btn[data-discount="None"]').classList.add('selected');
     }
-    rateModal.style.display = 'flex';
+
+    // Existing payments
+    const existingDiv = document.getElementById('existingPayments');
+    if (monthPayments.length === 0) {
+      existingDiv.innerHTML = '<p style="color:var(--text-light);font-size:0.88rem;">No payments this month.</p>';
+    } else {
+      existingDiv.innerHTML = monthPayments.map(p => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <strong>$${parseFloat(p.amount).toFixed(2)}</strong> - ${esc(p.method)} on ${esc(p.date)}
+            ${p.notes ? '<span style="color:var(--text-light);font-size:0.82rem;"> (' + esc(p.notes) + ')</span>' : ''}
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="editPaymentInline('${p.id}', ${parseFloat(p.amount)})" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.78rem;padding:5px 10px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
+            <button onclick="deletePaymentInline('${p.id}', '${s.id}')" style="background:#FFEBEE;border:1px solid #FFCDD2;color:#e53935;font-size:0.78rem;padding:5px 10px;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Reset add payment form
+    document.getElementById('pAmount').value = '';
+    document.getElementById('pDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('pMethod').value = '';
+    document.getElementById('pNotes').value = '';
+    document.querySelectorAll('#payMethods .pay-method-btn').forEach(b => b.classList.remove('selected'));
+
+    paymentModal.style.display = 'flex';
+  }
+
+  window.editPaymentInline = async function(id, currentAmount) {
+    const newAmount = prompt('Enter corrected amount:', currentAmount);
+    if (newAmount === null) return;
+    const amount = parseFloat(newAmount);
+    if (isNaN(amount) || amount < 0) { alert('Please enter a valid amount.'); return; }
+    const { error } = await supabase.from('payments').update({ amount }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    await addActivity(`Corrected payment to $${amount.toFixed(2)}`);
+    const sid = document.getElementById('pStudentId').value;
+    await openPaymentModal(sid);
+    await renderPayments();
   };
 
-  rateForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('rStudentId').value;
-    const rate = parseFloat(document.getElementById('rMonthlyRate').value) || RATE_BASE;
-    const selectedBtn = document.querySelector('#rateDiscountBtns .discount-btn.selected');
-    const discount = selectedBtn ? selectedBtn.dataset.discount : 'None';
-    const { error } = await supabase.from('students').update({ monthly_rate: rate, discount }).eq('id', id);
+  window.deletePaymentInline = async function(id, studentId) {
+    if (!confirm('Delete this payment?')) return;
+    const { error } = await supabase.from('payments').delete().eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
-    rateModal.style.display = 'none';
+    await addActivity('Deleted a payment');
+    await openPaymentModal(studentId);
     await renderPayments();
-    await renderOverview();
-  });
+  };
 
   // ===== COSTS =====
   const costModal = document.getElementById('costModal');
