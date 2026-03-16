@@ -1163,7 +1163,7 @@
           <td>${owedDisplay}</td>
           <td>${statusHtml}</td>
           <td>${paymentsDetail || '-'}</td>
-          <td style="display:flex;gap:6px;"><button onclick="editStudent('${s.id}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;">Edit Student</button><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
+          <td style="display:flex;gap:6px;"><button onclick="editRate('${s.id}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
         </tr>`;
       }).join('');
     }
@@ -1223,6 +1223,75 @@
 
 
 
+
+  // ===== RATE EDITOR MODAL =====
+  const rateModal = document.getElementById('rateModal');
+  const rateForm = document.getElementById('rateForm');
+  const RATE_BASE = 200;
+
+  document.getElementById('rateModalClose').addEventListener('click', () => rateModal.style.display = 'none');
+  document.getElementById('rateCancelBtn').addEventListener('click', () => rateModal.style.display = 'none');
+
+  // Discount buttons in rate modal
+  document.querySelectorAll('#rateDiscountBtns .discount-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#rateDiscountBtns .discount-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const rateInput = document.getElementById('rMonthlyRate');
+      const otherField = document.getElementById('rOtherField');
+      if (btn.dataset.discount === 'None') {
+        rateInput.value = RATE_BASE.toFixed(2);
+        otherField.style.display = 'none';
+      } else if (btn.dataset.discount === 'Other') {
+        otherField.style.display = 'block';
+        const pct = parseFloat(document.getElementById('rOtherPercent').value) || 0;
+        rateInput.value = (RATE_BASE * (1 - pct / 100)).toFixed(2);
+      } else {
+        rateInput.value = (RATE_BASE * 0.8).toFixed(2);
+        otherField.style.display = 'none';
+      }
+    });
+  });
+
+  document.getElementById('rOtherPercent').addEventListener('input', () => {
+    const pct = parseFloat(document.getElementById('rOtherPercent').value) || 0;
+    document.getElementById('rMonthlyRate').value = (RATE_BASE * (1 - pct / 100)).toFixed(2);
+  });
+
+  window.editRate = async function(studentId) {
+    const students = await getStudents();
+    const s = students.find(st => st.id === studentId);
+    if (!s) return;
+    document.getElementById('rStudentId').value = s.id;
+    document.getElementById('rateStudentDisplay').textContent = s.name;
+    document.getElementById('rMonthlyRate').value = s.monthly_rate || RATE_BASE;
+    document.getElementById('rOtherPercent').value = '';
+    document.getElementById('rOtherField').style.display = 'none';
+    // Set discount button
+    const disc = s.discount || 'None';
+    document.querySelectorAll('#rateDiscountBtns .discount-btn').forEach(b => b.classList.remove('selected'));
+    const match = document.querySelector(`#rateDiscountBtns .discount-btn[data-discount="${disc}"]`);
+    if (match) {
+      match.classList.add('selected');
+      if (disc === 'Other') document.getElementById('rOtherField').style.display = 'block';
+    } else {
+      document.querySelector('#rateDiscountBtns .discount-btn[data-discount="None"]').classList.add('selected');
+    }
+    rateModal.style.display = 'flex';
+  };
+
+  rateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('rStudentId').value;
+    const rate = parseFloat(document.getElementById('rMonthlyRate').value) || RATE_BASE;
+    const selectedBtn = document.querySelector('#rateDiscountBtns .discount-btn.selected');
+    const discount = selectedBtn ? selectedBtn.dataset.discount : 'None';
+    const { error } = await supabase.from('students').update({ monthly_rate: rate, discount }).eq('id', id);
+    if (error) { alert('Error: ' + error.message); return; }
+    rateModal.style.display = 'none';
+    await renderPayments();
+    await renderOverview();
+  });
 
   // ===== COSTS =====
   const costModal = document.getElementById('costModal');

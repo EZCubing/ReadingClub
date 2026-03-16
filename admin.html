@@ -525,6 +525,42 @@
       </div>
     </div>
 
+    <!-- Rate Editor Modal -->
+    <div class="modal" id="rateModal" style="display:none;">
+      <div class="modal__card" style="max-width:420px;">
+        <div class="modal__header">
+          <h3 id="rateModalTitle">Edit Rate</h3>
+          <button class="modal__close" id="rateModalClose">&times;</button>
+        </div>
+        <form id="rateForm">
+          <input type="hidden" id="rStudentId" />
+          <div class="pay-student-name" id="rateStudentDisplay"></div>
+          <div class="field">
+            <label>Discount</label>
+            <div class="discount-btns" id="rateDiscountBtns">
+              <button type="button" class="discount-btn" data-discount="None">None</button>
+              <button type="button" class="discount-btn" data-discount="Military">Military</button>
+              <button type="button" class="discount-btn" data-discount="Family">Family</button>
+              <button type="button" class="discount-btn" data-discount="Teacher">Teacher</button>
+              <button type="button" class="discount-btn" data-discount="Other">Other</button>
+            </div>
+          </div>
+          <div class="field" id="rOtherField" style="display:none;">
+            <label>Custom Discount (%)</label>
+            <input type="number" id="rOtherPercent" min="0" max="100" step="1" placeholder="e.g. 15" />
+          </div>
+          <div class="field">
+            <label>Monthly Rate ($)</label>
+            <input type="number" id="rMonthlyRate" step="0.01" min="0" required />
+          </div>
+          <div class="modal__actions">
+            <button type="button" class="btn btn--outline-dark" id="rateCancelBtn">Cancel</button>
+            <button type="submit" class="btn btn--primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- ===== COSTS TAB ===== -->
     <div class="dash-panel" id="panel-costs">
       <div class="panel-header">
