@@ -329,6 +329,7 @@
       time_slot: document.getElementById('sTime').value || null,
       level: document.getElementById('sLevel').value || null,
       lesson: parseInt(document.getElementById('sLesson').value) || null,
+      monthly_rate: parseFloat(document.getElementById('sMonthlyRate').value) || null,
       notes: document.getElementById('sNotes').value,
     };
 
@@ -503,6 +504,7 @@
     document.getElementById('sTime').value = s.time_slot || '';
     document.getElementById('sLevel').value = s.level || '';
     document.getElementById('sLesson').value = s.lesson || '';
+    document.getElementById('sMonthlyRate').value = s.monthly_rate || '';
     document.getElementById('sNotes').value = s.notes || '';
     document.getElementById('studentDeleteBtn').style.display = 'inline-flex';
     updateFormSections();
@@ -1043,8 +1045,18 @@
 
     // KPIs
     const totalCollected = monthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-    const paidCount = paidStudentIds.size;
-    const owedCount = placedStudents.filter(s => !paidStudentIds.has(s.id)).length;
+    const paidCount = placedStudents.filter(s => {
+      const rate = parseFloat(s.monthly_rate) || 0;
+      const paid = monthPayments.filter(p => p.student_id === s.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+      const hasFree = monthPayments.filter(p => p.student_id === s.id).some(p => p.method === 'Free');
+      return hasFree || (rate > 0 && paid >= rate);
+    }).length;
+    const owedCount = placedStudents.filter(s => {
+      const rate = parseFloat(s.monthly_rate) || 0;
+      const paid = monthPayments.filter(p => p.student_id === s.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+      const hasFree = monthPayments.filter(p => p.student_id === s.id).some(p => p.method === 'Free');
+      return !hasFree && (rate === 0 || paid < rate);
+    }).length;
 
     document.getElementById('payKpiCollected').textContent = '$' + totalCollected.toFixed(2);
     document.getElementById('payKpiPaid').textContent = paidCount;
@@ -1060,23 +1072,49 @@
     } else {
       empty.style.display = 'none';
 
-      // Sort: unpaid first, then paid
+      // Sort: unpaid first, partially paid, then paid
       const sorted = [...placedStudents].sort((a, b) => {
-        const aPaid = paidStudentIds.has(a.id);
-        const bPaid = paidStudentIds.has(b.id);
-        if (aPaid === bPaid) return a.name.localeCompare(b.name);
-        return aPaid ? 1 : -1;
+        const aRate = parseFloat(a.monthly_rate) || 0;
+        const bRate = parseFloat(b.monthly_rate) || 0;
+        const aPaid = monthPayments.filter(p => p.student_id === a.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+        const bPaid = monthPayments.filter(p => p.student_id === b.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+        const aFree = monthPayments.filter(p => p.student_id === a.id).some(p => p.method === 'Free');
+        const bFree = monthPayments.filter(p => p.student_id === b.id).some(p => p.method === 'Free');
+        const aFullyPaid = aFree || (aRate > 0 && aPaid >= aRate);
+        const bFullyPaid = bFree || (bRate > 0 && bPaid >= bRate);
+        if (aFullyPaid === bFullyPaid) return a.name.localeCompare(b.name);
+        return aFullyPaid ? 1 : -1;
       });
 
       body.innerHTML = sorted.map(s => {
         const studentPayments = monthPayments.filter(p => p.student_id === s.id);
         const totalPaid = studentPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
         const lastPayment = studentPayments.length > 0 ? studentPayments[0] : null;
+        const rate = parseFloat(s.monthly_rate) || 0;
+        const remaining = Math.max(0, rate - totalPaid);
 
         const hasFree = studentPayments.some(p => p.method === 'Free');
+
+        let statusHtml;
+        if (hasFree) {
+          statusHtml = '<span class="billing-status" style="background:#E3F2FD;color:#1565C0;">Free</span>';
+        } else if (rate > 0 && totalPaid >= rate) {
+          statusHtml = '<span class="billing-status paid">Paid</span>';
+        } else if (rate > 0 && totalPaid > 0) {
+          statusHtml = `<span class="billing-status" style="background:#FFF3E0;color:#E65100;">Partially Paid</span>`;
+        } else if (totalPaid > 0) {
+          statusHtml = `<span class="billing-status paid">$${totalPaid.toFixed(2)}</span>`;
+        } else {
+          statusHtml = '<span class="billing-status unpaid">Unpaid</span>';
+        }
+
+        const rateDisplay = rate > 0 ? `$${rate.toFixed(2)}` : 'Not set';
+        const paidDisplay = `$${totalPaid.toFixed(2)}`;
+        const owedDisplay = rate > 0 ? `$${remaining.toFixed(2)}` : '-';
+
         const paymentsDetail = studentPayments.map(p =>
           `<div style="font-size:0.78rem;color:var(--text-light);display:flex;align-items:center;gap:8px;">
-            <span>${esc(p.date)} — ${p.method === 'Free' ? 'Free' : '$' + parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
+            <span>${esc(p.date)} - ${p.method === 'Free' ? 'Free' : '$' + parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
             <button onclick="editPayment('${p.id}', ${parseFloat(p.amount)}, '${esc(p.method)}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
             <button onclick="deletePayment('${p.id}')" style="background:#FFEBEE;border:1px solid #FFCDD2;color:#e53935;font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
           </div>`
@@ -1085,8 +1123,11 @@
         return `<tr>
           <td><strong>${esc(s.name)}</strong></td>
           <td>${esc(s.club)}</td>
-          <td>${hasFree ? '<span class="billing-status" style="background:#E3F2FD;color:#1565C0;">Free</span>' : totalPaid > 0 ? `<span class="billing-status paid">$${totalPaid.toFixed(2)}</span>` : '<span class="billing-status unpaid">$0.00</span>'}</td>
-          <td>${paymentsDetail || '—'}</td>
+          <td>${rateDisplay}</td>
+          <td>${paidDisplay}</td>
+          <td>${owedDisplay}</td>
+          <td>${statusHtml}</td>
+          <td>${paymentsDetail || '-'}</td>
           <td><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
         </tr>`;
       }).join('');
