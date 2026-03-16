@@ -1150,10 +1150,8 @@
         const owedDisplay = rate > 0 ? `$${remaining.toFixed(2)}` : '-';
 
         const paymentsDetail = studentPayments.map(p =>
-          `<div style="font-size:0.78rem;color:var(--text-light);display:flex;align-items:center;gap:8px;">
-            <span>${esc(p.date)} - ${p.method === 'Free' ? 'Free' : '$' + parseFloat(p.amount).toFixed(2)} (${esc(p.method)})</span>
-            <button onclick="editPayment('${p.id}', ${parseFloat(p.amount)}, '${esc(p.method)}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
-            <button onclick="deletePayment('${p.id}')" style="background:#FFEBEE;border:1px solid #FFCDD2;color:#e53935;font-size:0.82rem;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
+          `<div style="font-size:0.78rem;color:var(--text-light);">
+            ${esc(p.date)} - ${p.method === 'Free' ? 'Free' : '$' + parseFloat(p.amount).toFixed(2)} (${esc(p.method)})
           </div>`
         ).join('');
 
