@@ -473,7 +473,8 @@ body {
 }
 
 .data-table tr:last-child td { border-bottom: none; }
-.data-table tr:hover td { background: #f9fdf9; }
+.data-table tr:nth-child(even) td { background: #f5f9f5; }
+.data-table tr:hover td { background: #edf5ed; }
 
 .data-table .actions {
   display: flex;
