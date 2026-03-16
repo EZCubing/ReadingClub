@@ -1273,7 +1273,12 @@
 
     const allPayments = await getPayments();
     const period = document.getElementById('billingMonth').value;
-    const monthPayments = allPayments.filter(p => p.student_id === s.id && p.billing_month === period);
+    const monthPayments = allPayments.filter(p => {
+      if (p.student_id !== s.id) return false;
+      if (p.period === period) return true;
+      if (p.date && p.date.startsWith(period)) return true;
+      return false;
+    });
     const totalPaid = monthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
     const rate = parseFloat(s.monthly_rate) || RATE_BASE;
     const remaining = Math.max(0, rate - totalPaid);
