@@ -1165,7 +1165,7 @@
           <td>${owedDisplay}</td>
           <td>${statusHtml}</td>
           <td>${paymentsDetail || '-'}</td>
-          <td><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
+          <td style="display:flex;gap:6px;"><button onclick="editStudent('${s.id}')" style="background:var(--green-pale);border:1px solid var(--border);color:var(--green-dark);font-size:0.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;">Edit Student</button><button class="mark-paid-btn" onclick="markPaid('${s.id}', '${esc(s.name)}')">Add Payment</button></td>
         </tr>`;
       }).join('');
     }
