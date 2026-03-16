@@ -275,6 +275,36 @@
 
   statusSelect.addEventListener('change', updateFormSections);
 
+  // Discount buttons
+  const BASE_RATE = 200;
+  const DISCOUNT_PERCENT = 0.20;
+
+  document.querySelectorAll('.discount-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.discount-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('sDiscount').value = btn.dataset.discount;
+      const rateInput = document.getElementById('sMonthlyRate');
+      if (btn.dataset.discount === 'None') {
+        rateInput.value = BASE_RATE.toFixed(2);
+      } else {
+        rateInput.value = (BASE_RATE * (1 - DISCOUNT_PERCENT)).toFixed(2);
+      }
+    });
+  });
+
+  function setDiscountButton(discount) {
+    document.querySelectorAll('.discount-btn').forEach(b => b.classList.remove('selected'));
+    const match = document.querySelector(`.discount-btn[data-discount="${discount || 'None'}"]`);
+    if (match) match.classList.add('selected');
+    document.getElementById('sDiscount').value = discount || 'None';
+  }
+
+  function setFormDefaults() {
+    document.getElementById('sMonthlyRate').value = BASE_RATE.toFixed(2);
+    setDiscountButton('None');
+  }
+
   // Pipeline filter buttons
   document.querySelectorAll('.pipeline__stage').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -289,6 +319,7 @@
   document.getElementById('addCurrentStudentBtn').addEventListener('click', () => {
     document.getElementById('studentModalTitle').textContent = 'Add Current Student';
     studentForm.reset();
+    setFormDefaults();
     document.getElementById('studentId').value = '';
     document.getElementById('studentDeleteBtn').style.display = 'none';
     statusSelect.value = 'Placed';
@@ -300,6 +331,7 @@
   document.getElementById('addStudentBtn').addEventListener('click', () => {
     document.getElementById('studentModalTitle').textContent = 'New Student';
     studentForm.reset();
+    setFormDefaults();
     document.getElementById('studentId').value = '';
     document.getElementById('studentDeleteBtn').style.display = 'none';
     statusSelect.value = 'Survey Submitted';
@@ -330,6 +362,7 @@
       level: document.getElementById('sLevel').value || null,
       lesson: parseInt(document.getElementById('sLesson').value) || null,
       monthly_rate: parseFloat(document.getElementById('sMonthlyRate').value) || null,
+      discount: document.getElementById('sDiscount').value || 'None',
       notes: document.getElementById('sNotes').value,
     };
 
@@ -504,7 +537,8 @@
     document.getElementById('sTime').value = s.time_slot || '';
     document.getElementById('sLevel').value = s.level || '';
     document.getElementById('sLesson').value = s.lesson || '';
-    document.getElementById('sMonthlyRate').value = s.monthly_rate || '';
+    document.getElementById('sMonthlyRate').value = s.monthly_rate || BASE_RATE;
+    setDiscountButton(s.discount);
     document.getElementById('sNotes').value = s.notes || '';
     document.getElementById('studentDeleteBtn').style.display = 'inline-flex';
     updateFormSections();
@@ -1108,7 +1142,8 @@
           statusHtml = '<span class="billing-status unpaid">Unpaid</span>';
         }
 
-        const rateDisplay = rate > 0 ? `$${rate.toFixed(2)}` : 'Not set';
+        const discountLabel = s.discount && s.discount !== 'None' ? ` <span style="font-size:0.72rem;background:#E3F2FD;color:#1565C0;padding:2px 6px;border-radius:4px;">${esc(s.discount)} 20%</span>` : '';
+        const rateDisplay = rate > 0 ? `$${rate.toFixed(2)}${discountLabel}` : 'Not set';
         const paidDisplay = `$${totalPaid.toFixed(2)}`;
         const owedDisplay = rate > 0 ? `$${remaining.toFixed(2)}` : '-';
 

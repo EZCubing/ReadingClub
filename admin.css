@@ -1478,6 +1478,36 @@ body {
   color: var(--red);
 }
 
+/* ===== DISCOUNT BUTTONS ===== */
+.discount-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.discount-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text);
+}
+
+.discount-btn:hover {
+  border-color: var(--green-light);
+}
+
+.discount-btn.selected {
+  background: var(--green);
+  color: var(--white);
+  border-color: var(--green);
+}
+
 /* ===== ROSTER SEARCH ===== */
 .roster-search {
   flex: 1;

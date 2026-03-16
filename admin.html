@@ -247,8 +247,18 @@
                 </div>
                 <div class="field">
                   <label>Monthly Rate ($)</label>
-                  <input type="number" id="sMonthlyRate" step="0.01" min="0" placeholder="e.g. 150" />
+                  <input type="number" id="sMonthlyRate" step="0.01" min="0" value="200" />
                 </div>
+              </div>
+              <div class="field">
+                <label>Discount (20% off)</label>
+                <div class="discount-btns" id="discountBtns">
+                  <button type="button" class="discount-btn" data-discount="None">None</button>
+                  <button type="button" class="discount-btn" data-discount="Military">Military</button>
+                  <button type="button" class="discount-btn" data-discount="Family">Family</button>
+                  <button type="button" class="discount-btn" data-discount="Teacher">Teacher</button>
+                </div>
+                <input type="hidden" id="sDiscount" value="None" />
               </div>
             </div>
 
