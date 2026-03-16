@@ -1055,8 +1055,10 @@
     if (error) { alert('Error recording payment: ' + error.message); return; }
 
     await addActivity(`Payment: $${amount.toFixed(2)} from ${studentName} via ${method} for ${monthLabel}`);
-    await renderPayments();
-    await renderOverview();
+    paymentForm.reset();
+    document.getElementById('pMethod').value = '';
+    document.querySelectorAll('#payMethods .pay-method-btn').forEach(b => b.classList.remove('selected'));
+    await refreshAll();
     await openPaymentModal(studentId);
   });
 
@@ -1349,9 +1351,8 @@
     const { error } = await supabase.from('payments').update({ amount }).eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity(`Corrected payment to $${amount.toFixed(2)}`);
-    await renderPayments();
-    await renderOverview();
     const sid = document.getElementById('pStudentId').value;
+    await refreshAll();
     await openPaymentModal(sid);
   };
 
@@ -1360,8 +1361,7 @@
     const { error } = await supabase.from('payments').delete().eq('id', id);
     if (error) { alert('Error: ' + error.message); return; }
     await addActivity('Deleted a payment');
-    await renderPayments();
-    await renderOverview();
+    await refreshAll();
     await openPaymentModal(studentId);
   };
 
