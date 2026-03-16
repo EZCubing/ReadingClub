@@ -1233,6 +1233,9 @@
       if (btn.dataset.discount === 'None') {
         rateInput.value = RATE_BASE.toFixed(2);
         otherField.style.display = 'none';
+      } else if (btn.dataset.discount === 'Free') {
+        rateInput.value = '0.00';
+        otherField.style.display = 'none';
       } else if (btn.dataset.discount === 'Other') {
         otherField.style.display = 'block';
         const pct = parseFloat(document.getElementById('rOtherPercent').value) || 0;
