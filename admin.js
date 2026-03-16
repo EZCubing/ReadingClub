@@ -1106,18 +1106,20 @@
     } else {
       empty.style.display = 'none';
 
-      // Sort: unpaid first, partially paid, then paid
+      // Sort: unpaid first (0), partially paid (1), fully paid (2), free (3)
+      function paymentRank(s) {
+        const rate = parseFloat(s.monthly_rate) || 0;
+        const paid = monthPayments.filter(p => p.student_id === s.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
+        const hasFree = monthPayments.filter(p => p.student_id === s.id).some(p => p.method === 'Free');
+        if (hasFree) return 3;
+        if (rate > 0 && paid >= rate) return 2;
+        if (paid > 0) return 1;
+        return 0;
+      }
       const sorted = [...placedStudents].sort((a, b) => {
-        const aRate = parseFloat(a.monthly_rate) || 0;
-        const bRate = parseFloat(b.monthly_rate) || 0;
-        const aPaid = monthPayments.filter(p => p.student_id === a.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
-        const bPaid = monthPayments.filter(p => p.student_id === b.id).reduce((sum, p) => sum + parseFloat(p.amount), 0);
-        const aFree = monthPayments.filter(p => p.student_id === a.id).some(p => p.method === 'Free');
-        const bFree = monthPayments.filter(p => p.student_id === b.id).some(p => p.method === 'Free');
-        const aFullyPaid = aFree || (aRate > 0 && aPaid >= aRate);
-        const bFullyPaid = bFree || (bRate > 0 && bPaid >= bRate);
-        if (aFullyPaid === bFullyPaid) return a.name.localeCompare(b.name);
-        return aFullyPaid ? 1 : -1;
+        const rankDiff = paymentRank(a) - paymentRank(b);
+        if (rankDiff !== 0) return rankDiff;
+        return a.name.localeCompare(b.name);
       });
 
       body.innerHTML = sorted.map(s => {
