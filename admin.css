@@ -1026,6 +1026,32 @@ body {
 
 .save-att-btn:hover { background: var(--green-dark); }
 
+.att-saved-label {
+  color: var(--green);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.edit-att-btn {
+  background: var(--bg-light);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-left: 12px;
+}
+
+.edit-att-btn:hover {
+  background: var(--border);
+}
+
+.pod[data-locked="true"] .att-btn {
+  cursor: default;
+  opacity: 0.8;
+}
+
 .no-students-msg {
   color: var(--text-light);
   font-size: 0.88rem;

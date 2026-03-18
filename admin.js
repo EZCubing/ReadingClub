@@ -770,8 +770,10 @@
 
       const teacherClass = teacher.includes('Dale') ? 'pod--dale' : teacher.includes('Jennifer') ? 'pod--jennifer' : teacher.includes('Stephanie') ? 'pod--stephanie' : '';
 
+      const allSaved = students.every(s => todayAtt[s.id]);
+
       html += `
-        <div class="pod ${teacherClass}">
+        <div class="pod ${teacherClass}" id="pod_${groupId}" data-locked="${allSaved}">
           <div class="pod__header">
             <div class="pod__teacher">${esc(teacher)}</div>
             <div class="pod__info">RM ${esc(level)} &bull; Lesson ${esc(lesson)} &bull; ${esc(timeSlot)} &bull; ${students.length} student(s)</div>
@@ -780,7 +782,10 @@
             ${studentsHtml}
           </div>
           <div class="pod__footer">
-            <button class="save-att-btn" onclick="saveAutoGroupAttendance('${groupId}')">Save Attendance</button>
+            ${allSaved
+              ? `<span class="att-saved-label">Attendance Saved</span> <button class="edit-att-btn" onclick="editGroupAttendance('${groupId}')">Edit</button>`
+              : `<button class="save-att-btn" onclick="saveAutoGroupAttendance('${groupId}')">Save Attendance</button>`
+            }
           </div>
         </div>
       `;
@@ -795,12 +800,32 @@
 
   window.setGroupAtt = function(btn) {
     const groupId = btn.dataset.group;
+    // Block clicks when attendance is already saved (locked)
+    const pod = document.getElementById('pod_' + groupId);
+    if (pod && pod.dataset.locked === 'true') return;
     const studentId = btn.dataset.student;
     const status = btn.dataset.status;
     if (!groupAttSelections[groupId]) groupAttSelections[groupId] = {};
     groupAttSelections[groupId][studentId] = { status, name: btn.dataset.name, club: btn.dataset.club };
     btn.parentElement.querySelectorAll('.att-btn').forEach(b => b.className = 'att-btn');
     btn.classList.add('selected-' + status);
+  };
+
+  window.editGroupAttendance = function(groupId) {
+    const pod = document.getElementById('pod_' + groupId);
+    if (!pod) return;
+    pod.dataset.locked = 'false';
+    // Pre-populate selections from existing attendance buttons
+    const buttons = pod.querySelectorAll('.att-btn');
+    if (!groupAttSelections[groupId]) groupAttSelections[groupId] = {};
+    buttons.forEach(btn => {
+      if (btn.classList.contains('selected-P') || btn.classList.contains('selected-A') || btn.classList.contains('selected-L')) {
+        groupAttSelections[groupId][btn.dataset.student] = { status: btn.dataset.status, name: btn.dataset.name, club: btn.dataset.club };
+      }
+    });
+    // Replace footer with save button
+    const footer = pod.querySelector('.pod__footer');
+    footer.innerHTML = `<button class="save-att-btn" onclick="saveAutoGroupAttendance('${groupId}')">Save Attendance</button>`;
   };
 
   window.saveAutoGroupAttendance = async function(groupId) {
@@ -810,13 +835,18 @@
     if (!selections || Object.keys(selections).length === 0) return alert('Please mark attendance for at least one student.');
 
     // Disable the save button to prevent double-clicks
-    const saveBtn = document.querySelector(`[onclick="saveAutoGroupAttendance('${groupId}')"]`);
+    const saveBtn = document.querySelector(`#pod_${groupId} .save-att-btn`);
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
 
     try {
       const records = Object.entries(selections).map(([studentId, info]) => ({
         date, student_id: studentId, student_name: info.name, club: info.club || '', status: info.status,
       }));
+
+      // Check if attendance already exists for these students on this date
+      const studentIds = records.map(r => r.student_id);
+      const { data: existingAtt } = await supabase.from('attendance').select('student_id').eq('date', date).in('student_id', studentIds);
+      const isFirstSave = !existingAtt || existingAtt.length === 0;
 
       // Delete existing records for these students on this date, then insert
       for (const r of records) {
@@ -825,15 +855,22 @@
       const { error } = await supabase.from('attendance').insert(records);
       if (error) { alert('Error saving attendance: ' + error.message); return; }
 
-      // Advance lesson by 1 for ALL students (P, A, and L)
-      for (const r of records) {
-        const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
-        const currentLesson = (student && student.lesson != null) ? student.lesson : 0;
-        const newLesson = Math.min(currentLesson + 1, 180);
-        await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
+      // Only advance lessons on FIRST save — prevents double-advancing
+      if (isFirstSave) {
+        for (const r of records) {
+          const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
+          const currentLesson = (student && student.lesson != null) ? student.lesson : 0;
+          const newLesson = Math.min(currentLesson + 1, 180);
+          await supabase.from('students').update({ lesson: newLesson }).eq('id', r.student_id);
+        }
       }
 
-      // Create missed lesson records for absent students (ML flag)
+      // Handle missed lessons — clean up old ones on edit, then create for absent students
+      if (!isFirstSave) {
+        for (const r of records) {
+          await supabase.from('missed_lessons').delete().eq('date', date).eq('student_id', r.student_id);
+        }
+      }
       const absentStudents = records.filter(r => r.status === 'A');
       for (const r of absentStudents) {
         const { data: student } = await supabase.from('students').select('lesson').eq('id', r.student_id).single();
@@ -847,12 +884,18 @@
       }
 
       const mlCount = absentStudents.length;
-      await addActivity(`Attendance: ${records.length} student(s) on ${date} — lessons advanced${mlCount > 0 ? ', ' + mlCount + ' ML flagged' : ''}`);
+      await addActivity(isFirstSave
+        ? `Attendance: ${records.length} student(s) on ${date} — lessons advanced${mlCount > 0 ? ', ' + mlCount + ' ML flagged' : ''}`
+        : `Attendance edited: ${records.length} student(s) on ${date}${mlCount > 0 ? ', ' + mlCount + ' ML flagged' : ''}`
+      );
       delete groupAttSelections[groupId];
 
       // Refresh everything
       await Promise.all([renderGroups(), renderRoster(), renderOverview(), renderHistory()]);
-      alert(`Saved! ${records.length} student(s) recorded.${mlCount > 0 ? ' ' + mlCount + ' missed lesson(s) flagged.' : ''}`);
+      alert(isFirstSave
+        ? `Saved! ${records.length} student(s) recorded.${mlCount > 0 ? ' ' + mlCount + ' missed lesson(s) flagged.' : ''}`
+        : `Updated! ${records.length} student(s) updated.${mlCount > 0 ? ' ' + mlCount + ' missed lesson(s) flagged.' : ''}`
+      );
     } catch (err) {
       alert('Error: ' + err.message);
     } finally {
